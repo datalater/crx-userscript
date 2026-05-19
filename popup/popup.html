@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="popup-header">
+    <p id="page-status" class="page-status" aria-live="polite"></p>
+    <p id="api-warning" class="api-warning" hidden data-i18n="popup_api_warning"></p>
+  </header>
+
+  <section id="page-rule" class="page-rule" hidden>
+    <label class="page-rule__label" for="pattern-input" data-i18n="popup_match_label"></label>
+    <div class="page-rule__row">
+      <input
+        id="pattern-input"
+        class="page-rule__input"
+        type="text"
+        spellcheck="false"
+        autocomplete="off"
+      />
+      <button type="button" id="btn-add" class="btn btn-primary" data-i18n="popup_add_script"></button>
+    </div>
+    <p id="pattern-hint" class="page-rule__hint" hidden></p>
+  </section>
+
+  <p id="summary" class="summary" hidden aria-live="polite"></p>
+  <ul id="script-list" class="script-list"></ul>
+  <p id="empty-list-hint" class="empty-list-hint" hidden data-i18n="popup_list_hint"></p>
+
+  <footer class="popup-footer">
+    <p id="other-count" class="other-count" hidden></p>
+    <div class="popup-footer__actions">
+      <button type="button" id="btn-reload" class="btn btn-sm" data-i18n="popup_reload_tab"></button>
+      <button type="button" id="btn-options" class="btn btn-sm" data-i18n="popup_manage"></button>
+    </div>
+  </footer>
+
+  <script src="../lib/match.js"></script>
+  <script src="../lib/script-status.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

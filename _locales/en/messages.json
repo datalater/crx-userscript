@@ -1,0 +1,84 @@
+{
+  "popup_page_status_none": { "message": "No scripts match this page." },
+  "popup_page_status_disabled": {
+    "message": "Scripts match this page but all are disabled."
+  },
+  "popup_page_status_active": {
+    "message": "$1 script(s) on this page ($2 enabled)."
+  },
+  "popup_match_label": { "message": "Patterns matching the current page" },
+  "popup_add_script": { "message": "Add script" },
+  "popup_pattern_no_match": { "message": "Does not match the current tab URL." },
+  "popup_list_hint": {
+    "message": "Add with the pattern above to run on this page. Reload the tab after saving."
+  },
+  "popup_edit_code": { "message": "Edit code" },
+  "popup_default_code": { "message": "// Edit code in the manager." },
+  "popup_no_http_tab": { "message": "Not an http(s) page tab" },
+  "popup_api_warning": {
+    "message": "Enable “Allow user scripts” for CRX User Script on chrome://extensions."
+  },
+  "popup_reload_tab": { "message": "Reload this tab" },
+  "popup_manage": { "message": "Manage all" },
+  "popup_summary": { "message": "$1 matching · $2 enabled" },
+  "popup_other_scripts": {
+    "message": "$1 script(s) for other URLs · <span data-action=\"options\">manage all</span>"
+  },
+  "popup_status_disabled": { "message": "Disabled" },
+  "popup_status_api_unavailable": { "message": "Allow user scripts required" },
+  "popup_status_pattern_invalid": { "message": "Invalid URL pattern" },
+  "popup_status_code_empty": { "message": "No code" },
+  "popup_status_tab_mismatch": { "message": "Pattern does not match this page" },
+  "popup_status_not_registered": {
+    "message": "Not registered in Chrome · check again shortly"
+  },
+  "popup_status_registered": { "message": "Registered" },
+  "options_page_title": { "message": "User script manager" },
+  "options_refresh": { "message": "Refresh" },
+  "options_loading": { "message": "Loading…" },
+  "options_page_subtitle": {
+    "message": "Scripts run on pages matching the URL pattern (not full regex). Refresh the target tab after saving."
+  },
+  "options_notice_devtools_title": { "message": "DevTools — visibilitychange testing" },
+  "options_notice_devtools_body": {
+    "message": "If tab-switch events never fire, turn off Rendering → “Emulate a focused page”. Enable Preserve log in the Console when debugging."
+  },
+  "options_api_warning": {
+    "message": "Enable “Allow user scripts” for CRX User Script on chrome://extensions."
+  },
+  "options_add_row": { "message": "Add script" },
+  "options_export": { "message": "Export" },
+  "options_import": { "message": "Import" },
+  "options_empty": { "message": "No scripts yet. Click “Add script” to start." },
+  "options_name_label": { "message": "Name" },
+  "options_name_placeholder": { "message": "e.g. Refresh on tab focus" },
+  "options_match_label": { "message": "Patterns matching the current page" },
+  "options_match_empty": { "message": "Enter a pattern." },
+  "options_match_invalid": { "message": "Invalid pattern format." },
+  "match_duplicate": { "message": "This URL pattern is already registered." },
+  "options_save_duplicate": {
+    "message": "Cannot save: duplicate URL patterns."
+  },
+  "options_match_ok": { "message": "Matches active tab URL" },
+  "options_match_no_tab": { "message": "Does not match active tab URL" },
+  "options_enabled": { "message": "Enabled" },
+  "options_delete": { "message": "Delete" },
+  "options_code_label": { "message": "JavaScript" },
+  "options_code_example": { "message": "example" },
+  "options_code_placeholder": {
+    "message": "registerCleanup(() => { /* cleanup */ });"
+  },
+  "options_saving": { "message": "Saving…" },
+  "options_saved": { "message": "Saved" },
+  "options_save_error": { "message": "Save failed" },
+  "options_import_error": { "message": "Import failed" },
+  "options_status_disabled": { "message": "Disabled" },
+  "options_status_api_unavailable": { "message": "Allow user scripts required" },
+  "options_status_pattern_invalid": { "message": "Invalid URL pattern" },
+  "options_status_code_empty": { "message": "No code · not registered" },
+  "options_status_tab_mismatch": { "message": "Pattern does not match reference tab" },
+  "options_status_not_registered": {
+    "message": "Not registered in Chrome · wait after save"
+  },
+  "options_status_registered": { "message": "Registered" }
+}

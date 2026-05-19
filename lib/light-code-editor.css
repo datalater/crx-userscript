@@ -1,0 +1,75 @@
+.mintool-lce {
+  display: flex;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #1e1e1e;
+  min-height: 140px;
+}
+
+.mintool-lce__gutter {
+  flex-shrink: 0;
+  width: 42px;
+  padding: 10px 6px 10px 0;
+  text-align: right;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #6b7280;
+  background: #252526;
+  border-right: 1px solid #333;
+  overflow: hidden;
+  user-select: none;
+  white-space: pre;
+}
+
+.mintool-lce__editor {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 120px;
+}
+
+.mintool-lce__highlight,
+.mintool-lce__input {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 10px 12px;
+  width: 100%;
+  height: 100%;
+  min-height: 120px;
+  border: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  tab-size: 2;
+}
+
+.mintool-lce__highlight {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  pointer-events: none;
+  white-space: pre;
+  color: #d4d4d4;
+  background: #1e1e1e;
+}
+
+.mintool-lce__input {
+  position: relative;
+  z-index: 1;
+  resize: vertical;
+  color: transparent;
+  caret-color: #d4d4d4;
+  background: transparent;
+  outline: none;
+}
+
+.mintool-lce__input::placeholder {
+  color: #6b7280;
+}
+
+.mintool-lce__highlight .tok-comment { color: #6a9955; }
+.mintool-lce__highlight .tok-string { color: #ce9178; }
+.mintool-lce__highlight .tok-keyword { color: #569cd6; }
+.mintool-lce__highlight .tok-number { color: #b5cea8; }

@@ -1,0 +1,176 @@
+{
+  "popup_page_status_none": {
+    "message": "이 페이지에 맞는 스크립트가 없습니다."
+  },
+  "popup_page_status_disabled": {
+    "message": "이 페이지용 스크립트가 있지만 모두 비활성입니다."
+  },
+  "popup_page_status_active": {
+    "message": "이 페이지에 스크립트 $1개(활성 $2개)가 있습니다."
+  },
+  "popup_match_label": {
+    "message": "현재 페이지에 맞는 URL 패턴"
+  },
+  "popup_add_script": {
+    "message": "스크립트 추가"
+  },
+  "popup_pattern_no_match": {
+    "message": "현재 탭 URL과 맞지 않습니다."
+  },
+  "popup_list_hint": {
+    "message": "위 패턴으로 추가하면 이 페이지에서 실행됩니다. 저장 후 탭을 새로고침하세요."
+  },
+  "popup_edit_code": {
+    "message": "코드 편집"
+  },
+  "popup_default_code": {
+    "message": "// 전체 관리에서 코드를 편집하세요."
+  },
+  "popup_no_http_tab": {
+    "message": "http(s) 웹 페이지 탭이 아닙니다"
+  },
+  "popup_api_warning": {
+    "message": "chrome://extensions에서 CRX User Script의 「사용자 스크립트 허용」을 켜 주세요."
+  },
+  "popup_reload_tab": {
+    "message": "이 탭 새로고침"
+  },
+  "popup_manage": {
+    "message": "전체 관리"
+  },
+  "popup_summary": {
+    "message": "$1개 매칭 · $2개 활성"
+  },
+  "popup_other_scripts": {
+    "message": "다른 URL용 스크립트 $1개 · <span data-action=\"options\">전체 관리</span>"
+  },
+  "popup_status_disabled": {
+    "message": "비활성"
+  },
+  "popup_status_api_unavailable": {
+    "message": "사용자 스크립트 허용 필요"
+  },
+  "popup_status_pattern_invalid": {
+    "message": "URL 패턴 오류"
+  },
+  "popup_status_code_empty": {
+    "message": "코드 없음"
+  },
+  "popup_status_tab_mismatch": {
+    "message": "이 페이지와 패턴 불일치"
+  },
+  "popup_status_not_registered": {
+    "message": "Chrome 미등록 · 잠시 후 다시 확인"
+  },
+  "popup_status_registered": {
+    "message": "등록됨"
+  },
+  "options_page_title": {
+    "message": "유저 스크립트 관리"
+  },
+  "options_refresh": {
+    "message": "새로고침"
+  },
+  "options_loading": {
+    "message": "불러오는 중…"
+  },
+  "options_page_subtitle": {
+    "message": "URL 패턴(정규식 아님)에 맞는 페이지에 스크립트를 주입합니다. 저장 후 해당 탭을 새로고침하세요."
+  },
+  "options_notice_devtools_title": {
+    "message": "DevTools — visibilitychange 테스트"
+  },
+  "options_notice_devtools_body": {
+    "message": "탭 전환 이벤트가 동작하지 않으면 DevTools → More tools(⋮) → Rendering → 「Emulate a focused page」를 끄세요. Console 테스트 시 Preserve log를 켜 두세요."
+  },
+  "options_api_warning": {
+    "message": "chrome://extensions에서 CRX User Script의 「사용자 스크립트 허용」을 켜 주세요."
+  },
+  "options_add_row": {
+    "message": "스크립트 추가"
+  },
+  "options_export": {
+    "message": "내보내기"
+  },
+  "options_import": {
+    "message": "가져오기"
+  },
+  "options_empty": {
+    "message": "스크립트가 없습니다. 「스크립트 추가」를 눌러 시작하세요."
+  },
+  "options_name_label": {
+    "message": "이름"
+  },
+  "options_name_placeholder": {
+    "message": "예: 탭 복귀 시 새로고침"
+  },
+  "options_match_label": {
+    "message": "현재 페이지에 맞는 URL 패턴"
+  },
+  "options_match_empty": {
+    "message": "패턴을 입력하세요."
+  },
+  "options_match_invalid": {
+    "message": "패턴 형식이 올바르지 않습니다."
+  },
+  "match_duplicate": {
+    "message": "동일한 URL 패턴이 이미 등록되어 있습니다."
+  },
+  "options_save_duplicate": {
+    "message": "동일한 URL 패턴이 중복되어 저장할 수 없습니다."
+  },
+  "options_match_ok": {
+    "message": "활성 탭 URL과 일치"
+  },
+  "options_match_no_tab": {
+    "message": "활성 탭 URL과 맞지 않음"
+  },
+  "options_enabled": {
+    "message": "활성"
+  },
+  "options_delete": {
+    "message": "삭제"
+  },
+  "options_code_label": {
+    "message": "JavaScript"
+  },
+  "options_code_example": {
+    "message": "example"
+  },
+  "options_code_placeholder": {
+    "message": "registerCleanup(() => { /* 정리 로직 */ });"
+  },
+  "options_saving": {
+    "message": "저장 중…"
+  },
+  "options_saved": {
+    "message": "저장됨"
+  },
+  "options_save_error": {
+    "message": "저장 실패"
+  },
+  "options_import_error": {
+    "message": "가져오기 실패"
+  },
+  "options_status_disabled": {
+    "message": "비활성"
+  },
+  "options_status_api_unavailable": {
+    "message": "사용자 스크립트 허용 필요"
+  },
+  "options_status_pattern_invalid": {
+    "message": "URL 패턴 오류"
+  },
+  "options_status_code_empty": {
+    "message": "코드 없음 · 등록 안 됨"
+  },
+  "options_status_tab_mismatch": {
+    "message": "참조 탭과 패턴 불일치"
+  },
+  "options_status_not_registered": {
+    "message": "Chrome 미등록 · 저장 후 잠시 대기"
+  },
+  "options_status_registered": {
+    "message": "등록됨"
+  }
+}
