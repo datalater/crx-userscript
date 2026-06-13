@@ -51,10 +51,15 @@ init();
 
 document.getElementById("btn-add").addEventListener("click", async () => {
   const matchPattern = await resolveDefaultMatchPattern();
-  const existing = listEl.querySelector(".script-card") ? collectScriptsFromDom() : scripts;
+  const existing = listEl.querySelector(".script-card")
+    ? collectScriptsFromDom()
+    : scripts;
 
   if (cusUserScripts.findScriptWithMatchPattern(matchPattern, existing)) {
-    setSaveStatus(msg("match_duplicate", "동일한 URL 패턴이 이미 등록되어 있습니다."), true);
+    setSaveStatus(
+      msg("match_duplicate", "동일한 URL 패턴이 이미 등록되어 있습니다."),
+      true,
+    );
     return;
   }
 
@@ -66,7 +71,9 @@ document.getElementById("btn-add").addEventListener("click", async () => {
 });
 
 document.getElementById("btn-export").addEventListener("click", exportScripts);
-document.getElementById("btn-import").addEventListener("click", () => importFileEl.click());
+document
+  .getElementById("btn-import")
+  .addEventListener("click", () => importFileEl.click());
 importFileEl.addEventListener("change", onImportFile);
 btnRefresh.addEventListener("click", () => reloadScripts());
 document.addEventListener("keydown", onDocumentKeydown);
@@ -98,7 +105,9 @@ async function loadScriptsData({ focusFromSession = false } = {}) {
     CUS_STORAGE_KEY,
     CUS_COMMON_UTILS_STORAGE_KEY,
   ]);
-  scripts = Array.isArray(stored[CUS_STORAGE_KEY]) ? stored[CUS_STORAGE_KEY] : [];
+  scripts = Array.isArray(stored[CUS_STORAGE_KEY])
+    ? stored[CUS_STORAGE_KEY]
+    : [];
   commonUtils = normalizeCommonUtils(stored[CUS_COMMON_UTILS_STORAGE_KEY]);
   renderCommonUtils();
 
@@ -220,7 +229,9 @@ function renderApiWarning() {
 async function loadRegisteredIds() {
   if (!isUserScriptsApiAvailable()) return new Set();
   const registered = await chrome.userScripts.getScripts();
-  return new Set(registered.filter((s) => s.id.startsWith("cus-")).map((s) => s.id));
+  return new Set(
+    registered.filter((s) => s.id.startsWith("cus-")).map((s) => s.id),
+  );
 }
 
 async function requestRegistrySync() {
@@ -247,7 +258,10 @@ async function resolveReferenceTabUrl() {
   }
 
   try {
-    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    const [tab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
     if (cusUserScripts.isWebUrl(tab?.url)) return tab.url;
   } catch (error) {
     console.warn("[options] tab query failed", error);
@@ -301,7 +315,10 @@ function addRow(script, options = {}) {
   const nameInput = document.createElement("input");
   nameInput.type = "text";
   nameInput.value = script.name || "";
-  nameInput.placeholder = msg("options_name_placeholder", "예: ChatGPT 새로고침");
+  nameInput.placeholder = msg(
+    "options_name_placeholder",
+    "예: ChatGPT 새로고침",
+  );
   nameField.append(nameInput);
 
   const matchField = document.createElement("div");
@@ -326,7 +343,10 @@ function addRow(script, options = {}) {
   const enableInput = document.createElement("input");
   enableInput.type = "checkbox";
   enableInput.checked = script.enabled !== false;
-  enableLabel.append(enableInput, document.createTextNode(msg("options_enabled", "활성")));
+  enableLabel.append(
+    enableInput,
+    document.createTextNode(msg("options_enabled", "활성")),
+  );
 
   const deleteBtn = document.createElement("button");
   deleteBtn.type = "button";
@@ -362,18 +382,24 @@ function addRow(script, options = {}) {
     value: script.code || "",
     placeholder: msg(
       "options_code_placeholder",
-      "registerCleanup(() => { /* cleanup */ });"
+      "registerCleanup(() => { /* cleanup */ });",
     ),
     minLines: 8,
     onChange: scheduleSave,
   });
 
   exampleBtn.addEventListener("click", () => {
-    editor.setValue(VISIBILITYCHANGE_EXAMPLE);
-    scheduleSave();
+    showCopyablePopup(VISIBILITYCHANGE_EXAMPLE);
   });
 
-  rowState.set(script.id, { editor, matchInput, matchHint, statusChip, nameInput, enableInput });
+  rowState.set(script.id, {
+    editor,
+    matchInput,
+    matchHint,
+    statusChip,
+    nameInput,
+    enableInput,
+  });
 
   const refreshRowUi = () => {
     updateMatchHint(matchInput, matchHint, script.id);
@@ -412,7 +438,10 @@ function updateMatchHint(matchInput, hintEl, scriptId) {
 
   if (!re) {
     hintEl.className = "match-hint match-hint--error";
-    hintEl.textContent = msg("options_match_invalid", "패턴 형식이 올바르지 않습니다.");
+    hintEl.textContent = msg(
+      "options_match_invalid",
+      "패턴 형식이 올바르지 않습니다.",
+    );
     matchInput.classList.add("is-invalid");
     return;
   }
@@ -420,11 +449,14 @@ function updateMatchHint(matchInput, hintEl, scriptId) {
   const duplicate = cusUserScripts.findScriptWithMatchPattern(
     pattern,
     collectScriptsFromDom(),
-    scriptId
+    scriptId,
   );
   if (duplicate) {
     hintEl.className = "match-hint match-hint--error";
-    hintEl.textContent = msg("match_duplicate", "동일한 URL 패턴이 이미 등록되어 있습니다.");
+    hintEl.textContent = msg(
+      "match_duplicate",
+      "동일한 URL 패턴이 이미 등록되어 있습니다.",
+    );
     matchInput.classList.add("is-invalid");
     return;
   }
@@ -432,17 +464,22 @@ function updateMatchHint(matchInput, hintEl, scriptId) {
   matchInput.classList.remove("is-invalid");
   const chromePattern = cusUserScripts.toChromeMatchPatterns(pattern)[0];
 
-  if (referenceTabUrl && cusUserScripts.urlMatchesPattern(pattern, referenceTabUrl)) {
+  if (
+    referenceTabUrl &&
+    cusUserScripts.urlMatchesPattern(pattern, referenceTabUrl)
+  ) {
     hintEl.className = "match-hint match-hint--ok";
     hintEl.textContent =
-      msg("options_match_ok", "활성 탭 URL과 일치") + ` · Chrome: ${chromePattern}`;
+      msg("options_match_ok", "활성 탭 URL과 일치") +
+      ` · Chrome: ${chromePattern}`;
     return;
   }
 
   if (referenceTabUrl) {
     hintEl.className = "match-hint match-hint--warn";
     hintEl.textContent =
-      msg("options_match_no_tab", "활성 탭과 맞지 않음") + ` · Chrome: ${chromePattern}`;
+      msg("options_match_no_tab", "활성 탭과 맞지 않음") +
+      ` · Chrome: ${chromePattern}`;
     return;
   }
 
@@ -532,8 +569,11 @@ async function saveScripts() {
         }
       });
       setSaveStatus(
-        msg("options_save_duplicate", "동일한 URL 패턴이 중복되어 저장할 수 없습니다."),
-        true
+        msg(
+          "options_save_duplicate",
+          "동일한 URL 패턴이 중복되어 저장할 수 없습니다.",
+        ),
+        true,
       );
       return;
     }
@@ -541,9 +581,9 @@ async function saveScripts() {
       setSaveStatus(
         msg(
           "options_common_utils_invalid",
-          "공통 유틸은 export const utils = { ... } 형태로 시작해야 합니다."
+          "공통 유틸은 export const utils = { ... } 형태로 시작해야 합니다.",
         ),
-        true
+        true,
       );
       return;
     }
@@ -672,4 +712,52 @@ function teardownRows() {
   rowState.forEach((state) => state.editor.destroy());
   rowState.clear();
   listEl.innerHTML = "";
+}
+
+function showCopyablePopup(text) {
+  const existingPopup = document.querySelector("[data-copyable-popup]");
+
+  if (existingPopup) {
+    existingPopup.remove();
+  }
+
+  const popup = document.createElement("div");
+  popup.dataset.copyablePopup = "true";
+
+  popup.style.position = "fixed";
+  popup.style.top = "24px";
+  popup.style.right = "24px";
+  popup.style.zIndex = "999999";
+  popup.style.width = "520px";
+  popup.style.maxWidth = "calc(100vw - 48px)";
+  popup.style.padding = "12px";
+  popup.style.background = "white";
+  popup.style.border = "1px solid #ddd";
+  popup.style.borderRadius = "8px";
+  popup.style.boxShadow = "0 8px 24px rgba(0, 0, 0, 0.18)";
+
+  const closeButton = document.createElement("button");
+  closeButton.textContent = "Close";
+  closeButton.style.marginBottom = "8px";
+  closeButton.addEventListener("click", () => {
+    popup.remove();
+  });
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.readOnly = true;
+  textarea.style.width = "100%";
+  textarea.style.height = "320px";
+  textarea.style.boxSizing = "border-box";
+  textarea.style.resize = "vertical";
+  textarea.style.fontFamily = "monospace";
+  textarea.style.fontSize = "13px";
+  textarea.style.lineHeight = "1.5";
+
+  popup.appendChild(closeButton);
+  popup.appendChild(textarea);
+  document.body.appendChild(popup);
+
+  textarea.focus();
+  textarea.select();
 }
