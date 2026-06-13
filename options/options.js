@@ -1,4 +1,10 @@
 const SAVE_DEBOUNCE_MS = 350;
+const COMMON_UTILS_PLACEHOLDER = `export const utils = {
+  qs(selector) {
+    return document.querySelector(selector);
+  },
+};
+`;
 
 const VISIBILITYCHANGE_EXAMPLE = `document.addEventListener("visibilitychange", (event) => {
   console.log("event:", event.type);
@@ -19,18 +25,28 @@ const importFileEl = document.getElementById("import-file");
 const apiWarningEl = document.getElementById("api-warning");
 const toolbarEl = document.querySelector(".toolbar");
 const btnRefresh = document.getElementById("btn-refresh");
+const tabEls = document.querySelectorAll(".options-tab");
+const panelScriptsEl = document.getElementById("panel-scripts");
+const panelCommonUtilsEl = document.getElementById("panel-common-utils");
+const commonUtilsEnabledEl = document.getElementById("common-utils-enabled");
+const commonUtilsEditorHost = document.getElementById("common-utils-editor");
 
 /** @type {Map<string, { editor: ReturnType<typeof createLightCodeEditor> }>} */
 const rowState = new Map();
 
 let scripts = [];
+let commonUtils = { enabled: true, code: "" };
 let defaultMatchPattern = "https?://*/*";
 let referenceTabUrl = "";
 let saveTimer = null;
 let registeredIds = new Set();
 let isLoading = false;
+let activePanel = "scripts";
+let commonUtilsEditor = null;
+let isHydratingCommonUtils = false;
 
 initI18n();
+initCommonUtilsEditor();
 init();
 
 document.getElementById("btn-add").addEventListener("click", async () => {
@@ -54,6 +70,10 @@ document.getElementById("btn-import").addEventListener("click", () => importFile
 importFileEl.addEventListener("change", onImportFile);
 btnRefresh.addEventListener("click", () => reloadScripts());
 document.addEventListener("keydown", onDocumentKeydown);
+commonUtilsEnabledEl.addEventListener("change", scheduleSave);
+tabEls.forEach((tab) => {
+  tab.addEventListener("click", () => setActivePanel(tab.dataset.panel));
+});
 
 function setLoading(loading) {
   isLoading = loading;
@@ -62,14 +82,25 @@ function setLoading(loading) {
   btnRefresh.disabled = loading;
   toolbarEl?.classList.toggle("is-disabled", loading);
   listEl.setAttribute("aria-busy", loading ? "true" : "false");
+  if (loading) {
+    panelScriptsEl.hidden = true;
+    panelCommonUtilsEl.hidden = true;
+  } else {
+    setActivePanel(activePanel);
+  }
 }
 
 async function loadScriptsData({ focusFromSession = false } = {}) {
   teardownRows();
   registeredIds = await loadRegisteredIds();
 
-  const stored = await chrome.storage.local.get(CUS_STORAGE_KEY);
+  const stored = await chrome.storage.local.get([
+    CUS_STORAGE_KEY,
+    CUS_COMMON_UTILS_STORAGE_KEY,
+  ]);
   scripts = Array.isArray(stored[CUS_STORAGE_KEY]) ? stored[CUS_STORAGE_KEY] : [];
+  commonUtils = normalizeCommonUtils(stored[CUS_COMMON_UTILS_STORAGE_KEY]);
+  renderCommonUtils();
 
   if (!scripts.length) {
     showEmptyState();
@@ -141,6 +172,29 @@ function initI18n() {
     if (!message) return;
     el.title = message;
     el.setAttribute("aria-label", message);
+  });
+}
+
+function initCommonUtilsEditor() {
+  commonUtilsEditor = createLightCodeEditor(commonUtilsEditorHost, {
+    value: "",
+    placeholder: COMMON_UTILS_PLACEHOLDER,
+    minLines: 8,
+    onChange: () => {
+      if (!isHydratingCommonUtils) scheduleSave();
+    },
+  });
+}
+
+function setActivePanel(panel) {
+  activePanel = panel === "common-utils" ? "common-utils" : "scripts";
+  panelScriptsEl.hidden = activePanel !== "scripts";
+  panelCommonUtilsEl.hidden = activePanel !== "common-utils";
+
+  tabEls.forEach((tab) => {
+    const active = tab.dataset.panel === activePanel;
+    tab.classList.toggle("is-active", active);
+    tab.setAttribute("aria-selected", active ? "true" : "false");
   });
 }
 
@@ -470,6 +524,7 @@ function saveNow() {
 async function saveScripts() {
   try {
     const next = collectScriptsFromDom();
+    const nextCommonUtils = collectCommonUtilsFromDom();
     if (cusUserScripts.hasDuplicateMatchPatterns(next)) {
       rowState.forEach((state, id) => {
         if (state.matchInput && state.matchHint) {
@@ -482,9 +537,23 @@ async function saveScripts() {
       );
       return;
     }
+    if (!isValidCommonUtils(nextCommonUtils)) {
+      setSaveStatus(
+        msg(
+          "options_common_utils_invalid",
+          "공통 유틸은 export const utils = { ... } 형태로 시작해야 합니다."
+        ),
+        true
+      );
+      return;
+    }
 
     scripts = next;
-    await chrome.storage.local.set({ [CUS_STORAGE_KEY]: scripts });
+    commonUtils = nextCommonUtils;
+    await chrome.storage.local.set({
+      [CUS_STORAGE_KEY]: scripts,
+      [CUS_COMMON_UTILS_STORAGE_KEY]: commonUtils,
+    });
     await requestRegistrySync();
     registeredIds = await loadRegisteredIds();
     rowState.forEach((state, id) => {
@@ -497,6 +566,33 @@ async function saveScripts() {
     console.error("[options] save failed", error);
     setSaveStatus(msg("options_save_error", "저장 실패"), true);
   }
+}
+
+function collectCommonUtilsFromDom() {
+  return {
+    enabled: Boolean(commonUtilsEnabledEl.checked),
+    code: commonUtilsEditor?.getValue() ?? "",
+  };
+}
+
+function isValidCommonUtils(value) {
+  const code = String(value?.code || "").trim();
+  if (!value?.enabled || !code) return true;
+  return /^\s*export\s+const\s+utils\s*=/.test(code);
+}
+
+function normalizeCommonUtils(raw) {
+  return {
+    enabled: raw?.enabled !== false,
+    code: typeof raw?.code === "string" ? raw.code : "",
+  };
+}
+
+function renderCommonUtils() {
+  isHydratingCommonUtils = true;
+  commonUtilsEnabledEl.checked = commonUtils.enabled !== false;
+  commonUtilsEditor?.setValue(commonUtils.code || "");
+  isHydratingCommonUtils = false;
 }
 
 function setSaveStatus(text, isError) {
@@ -514,6 +610,7 @@ function exportScripts() {
     version: 1,
     exportedAt: new Date().toISOString(),
     userScripts: collectScriptsFromDom(),
+    commonUtils: collectCommonUtilsFromDom(),
   };
 
   const blob = new Blob([JSON.stringify(payload, null, 2)], {
@@ -546,6 +643,8 @@ async function onImportFile(event) {
 
     teardownRows();
     scripts = imported.map(normalizeImportedScript);
+    commonUtils = normalizeCommonUtils(data?.commonUtils);
+    renderCommonUtils();
     if (cusUserScripts.hasDuplicateMatchPatterns(scripts)) {
       throw new Error("duplicate match patterns");
     }

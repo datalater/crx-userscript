@@ -7,7 +7,6 @@ const { JSDOM } = require("jsdom");
 function createOptionsDom() {
   return new JSDOM(
     `<!doctype html>
-    <main id="script-list"></main>
     <div id="page-loading"></div>
     <span id="save-status"></span>
     <input id="import-file" type="file">
@@ -16,7 +15,16 @@ function createOptionsDom() {
     <button id="btn-refresh"></button>
     <button id="btn-add"></button>
     <button id="btn-export"></button>
-    <button id="btn-import"></button>`,
+    <button id="btn-import"></button>
+    <button class="options-tab is-active" data-panel="scripts"></button>
+    <button class="options-tab" data-panel="common-utils"></button>
+    <main id="panel-scripts">
+      <div id="script-list" hidden></div>
+    </main>
+    <section id="panel-common-utils" hidden>
+      <input id="common-utils-enabled" type="checkbox">
+      <div id="common-utils-editor"></div>
+    </section>`,
     {
       pretendToBeVisual: true,
       url: "chrome-extension://test/options/options.html",
@@ -34,6 +42,7 @@ async function waitFor(predicate) {
 
 function loadOptionsScript(window, { setCalls }) {
   window.CUS_STORAGE_KEY = "scripts";
+  window.CUS_COMMON_UTILS_STORAGE_KEY = "commonUtils";
   window.CUS_FOCUS_SCRIPT_ID_KEY = "focusScriptId";
   window.CUS_REFERENCE_TAB_URL_KEY = "referenceTabUrl";
   window.chrome = {

@@ -38,7 +38,7 @@ function scheduleRegistrySync() {
 }
 
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === "local" && changes.userScripts) {
+  if (area === "local" && (changes.userScripts || changes.commonUtils)) {
     scheduleRegistrySync();
   }
 });

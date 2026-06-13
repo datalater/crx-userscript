@@ -49,6 +49,12 @@
   "options_add_row": { "message": "Add script" },
   "options_export": { "message": "Export" },
   "options_import": { "message": "Import" },
+  "options_tab_scripts": { "message": "Page scripts" },
+  "options_tab_common_utils": { "message": "Shared utils" },
+  "options_common_utils_title": { "message": "Shared utils" },
+  "options_common_utils_description": {
+    "message": "Runs before every page script. Write it as export const utils = { ... }. Page scripts can call helpers as utils.qs(...)."
+  },
   "options_empty": { "message": "No scripts yet. Click “Add script” to start." },
   "options_name_label": { "message": "Name" },
   "options_name_placeholder": { "message": "e.g. Refresh on tab focus" },
@@ -71,6 +77,9 @@
   "options_saving": { "message": "Saving…" },
   "options_saved": { "message": "Saved" },
   "options_save_error": { "message": "Save failed" },
+  "options_common_utils_invalid": {
+    "message": "Shared utils must start with export const utils = { ... }."
+  },
   "options_import_error": { "message": "Import failed" },
   "options_status_disabled": { "message": "Disabled" },
   "options_status_api_unavailable": { "message": "Allow user scripts required" },
