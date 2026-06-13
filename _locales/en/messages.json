@@ -8,7 +8,9 @@
   },
   "popup_match_label": { "message": "Patterns matching the current page" },
   "popup_add_script": { "message": "Add script" },
-  "popup_pattern_no_match": { "message": "Does not match the current tab URL." },
+  "popup_pattern_no_match": {
+    "message": "Does not match the current tab URL."
+  },
   "popup_list_hint": {
     "message": "Add with the pattern above to run on this page. Reload the tab after saving."
   },
@@ -28,7 +30,9 @@
   "popup_status_api_unavailable": { "message": "Allow user scripts required" },
   "popup_status_pattern_invalid": { "message": "Invalid URL pattern" },
   "popup_status_code_empty": { "message": "No code" },
-  "popup_status_tab_mismatch": { "message": "Pattern does not match this page" },
+  "popup_status_tab_mismatch": {
+    "message": "Pattern does not match this page"
+  },
   "popup_status_not_registered": {
     "message": "Not registered in Chrome · check again shortly"
   },
@@ -39,7 +43,9 @@
   "options_page_subtitle": {
     "message": "Scripts run on pages matching the URL pattern (not full regex). Refresh the target tab after saving."
   },
-  "options_notice_devtools_title": { "message": "DevTools — visibilitychange testing" },
+  "options_notice_devtools_title": {
+    "message": "DevTools — visibilitychange testing"
+  },
   "options_notice_devtools_body": {
     "message": "If tab-switch events never fire, turn off Rendering → “Emulate a focused page”. Enable Preserve log in the Console when debugging."
   },
@@ -55,7 +61,9 @@
   "options_common_utils_description": {
     "message": "Runs before every page script. Write it as export const utils = { ... }. Page scripts can call helpers as utils.qs(...)."
   },
-  "options_empty": { "message": "No scripts yet. Click “Add script” to start." },
+  "options_empty": {
+    "message": "No scripts yet. Click “Add script” to start."
+  },
   "options_name_label": { "message": "Name" },
   "options_name_placeholder": { "message": "e.g. Refresh on tab focus" },
   "options_match_label": { "message": "Patterns matching the current page" },
@@ -75,17 +83,21 @@
     "message": "registerCleanup(() => { /* cleanup */ });"
   },
   "options_saving": { "message": "Saving…" },
-  "options_saved": { "message": "Saved" },
+  "options_saved": { "message": "✅ Saved" },
   "options_save_error": { "message": "Save failed" },
   "options_common_utils_invalid": {
     "message": "Shared utils must start with export const utils = { ... }."
   },
   "options_import_error": { "message": "Import failed" },
   "options_status_disabled": { "message": "Disabled" },
-  "options_status_api_unavailable": { "message": "Allow user scripts required" },
+  "options_status_api_unavailable": {
+    "message": "Allow user scripts required"
+  },
   "options_status_pattern_invalid": { "message": "Invalid URL pattern" },
   "options_status_code_empty": { "message": "No code · not registered" },
-  "options_status_tab_mismatch": { "message": "Pattern does not match reference tab" },
+  "options_status_tab_mismatch": {
+    "message": "Pattern does not match reference tab"
+  },
   "options_status_not_registered": {
     "message": "Not registered in Chrome · wait after save"
   },

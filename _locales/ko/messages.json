@@ -156,7 +156,7 @@
     "message": "저장 중…"
   },
   "options_saved": {
-    "message": "저장됨"
+    "message": "✅ 저장됨"
   },
   "options_save_error": {
     "message": "저장 실패"
