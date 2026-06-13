@@ -154,6 +154,10 @@ h1 {
   background: #f0f0f0;
 }
 
+#btn-refresh {
+  padding: 4px;
+}
+
 .btn-primary {
   background: #2563eb;
   border-color: #2563eb;

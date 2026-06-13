@@ -53,6 +53,7 @@ document.getElementById("btn-export").addEventListener("click", exportScripts);
 document.getElementById("btn-import").addEventListener("click", () => importFileEl.click());
 importFileEl.addEventListener("change", onImportFile);
 btnRefresh.addEventListener("click", () => reloadScripts());
+document.addEventListener("keydown", onDocumentKeydown);
 
 function setLoading(loading) {
   isLoading = loading;
@@ -447,6 +448,23 @@ function scheduleSave() {
   clearTimeout(saveTimer);
   saveTimer = setTimeout(saveScripts, SAVE_DEBOUNCE_MS);
   setSaveStatus(msg("options_saving", "저장 중…"), false);
+}
+
+function onDocumentKeydown(event) {
+  if (!isSaveShortcut(event)) return;
+  event.preventDefault();
+  if (isLoading) return;
+  saveNow();
+}
+
+function isSaveShortcut(event) {
+  return (event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "s";
+}
+
+function saveNow() {
+  clearTimeout(saveTimer);
+  saveTimer = null;
+  return saveScripts();
 }
 
 async function saveScripts() {

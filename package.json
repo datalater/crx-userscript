@@ -1,0 +1,21 @@
+{
+  "name": "crx-userscript",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "build:codemirror": "mkdir -p vendor/codemirror && esbuild src/codemirror-entry.js --bundle --format=iife --global-name=CodeMirrorBundle --outfile=vendor/codemirror/codemirror.bundle.js --minify",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@codemirror/autocomplete": "^6.18.6",
+    "@codemirror/commands": "^6.8.1",
+    "@codemirror/lang-javascript": "^6.2.4",
+    "@codemirror/language": "^6.11.3",
+    "@codemirror/state": "^6.5.2",
+    "@codemirror/view": "^6.36.6",
+    "esbuild": "^0.25.5",
+    "jsdom": "^26.1.0"
+  },
+  "packageManager": "pnpm@10.26.0+sha512.3b3f6c725ebe712506c0ab1ad4133cf86b1f4b687effce62a9b38b4d72e3954242e643190fc51fa1642949c735f403debd44f5cb0edd657abe63a8b6a7e1e402"
+}
