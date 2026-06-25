@@ -93,3 +93,11 @@ test("CodeMirror setup uses the provided default visual theme instead of a custo
   assert.equal(source.includes("EditorView.theme("), false);
   assert.equal(source.includes("dark: true"), false);
 });
+
+test("CodeMirror setup enables the default search panel keymap", () => {
+  const source = readFileSync("src/codemirror-entry.js", "utf8");
+
+  assert.match(source, /from "@codemirror\/search"/);
+  assert.match(source, /\bsearch\(\)/);
+  assert.match(source, /\.\.\.searchKeymap/);
+});

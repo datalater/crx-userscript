@@ -8,6 +8,7 @@ import {
   indentOnInput,
   syntaxHighlighting,
 } from "@codemirror/language";
+import { search, searchKeymap } from "@codemirror/search";
 import { EditorState } from "@codemirror/state";
 import {
   EditorView,
@@ -55,8 +56,10 @@ window.createCodeMirrorEditor = function createCodeMirrorEditor(options) {
         highlightActiveLine(),
         placeholderExtension(placeholder),
         javascript(),
+        search(),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         keymap.of([
+          ...searchKeymap,
           indentWithTab,
           ...closeBracketsKeymap,
           ...defaultKeymap,
