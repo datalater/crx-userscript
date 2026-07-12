@@ -8,7 +8,7 @@
 </head>
 <body>
   <div class="container">
-    <header>
+    <header class="page-header">
       <div class="page-title-row">
         <h1 data-i18n="options_page_title">유저 스크립트 관리</h1>
         <button
@@ -35,38 +35,46 @@
         <p data-i18n="options_notice_devtools_body"></p>
       </aside>
       <p id="api-warning" class="api-warning" hidden></p>
-      <div class="toolbar">
-        <button type="button" id="btn-add" class="btn btn-primary" data-i18n="options_add_row">스크립트 추가</button>
-        <button type="button" id="btn-export" class="btn" data-i18n="options_export">내보내기</button>
-        <button type="button" id="btn-import" class="btn" data-i18n="options_import">가져오기</button>
-        <input type="file" id="import-file" accept="application/json,.json" hidden>
-        <span id="save-status" class="save-status" aria-live="polite"></span>
-      </div>
     </header>
-    <nav class="options-tabs" aria-label="Options sections">
-      <button
-        type="button"
-        id="tab-scripts"
-        class="options-tab is-active"
-        data-panel="scripts"
-        data-i18n="options_tab_scripts"
-        aria-controls="panel-scripts"
-        aria-selected="true"
-      >
-        페이지별 스크립트
-      </button>
-      <button
-        type="button"
-        id="tab-common-utils"
-        class="options-tab"
-        data-panel="common-utils"
-        data-i18n="options_tab_common_utils"
-        aria-controls="panel-common-utils"
-        aria-selected="false"
-      >
-        공통 유틸
-      </button>
-    </nav>
+
+    <div class="sticky-chrome-sentinel" aria-hidden="true"></div>
+    <div id="sticky-chrome" class="sticky-chrome">
+      <div class="sticky-chrome__inner">
+        <nav class="options-tabs" aria-label="Options sections">
+          <button
+            type="button"
+            id="tab-scripts"
+            class="options-tab is-active"
+            data-panel="scripts"
+            data-i18n="options_tab_scripts"
+            aria-controls="panel-scripts"
+            aria-selected="true"
+          >
+            페이지별 스크립트
+          </button>
+          <button
+            type="button"
+            id="tab-common-utils"
+            class="options-tab"
+            data-panel="common-utils"
+            data-i18n="options_tab_common_utils"
+            aria-controls="panel-common-utils"
+            aria-selected="false"
+          >
+            공통 유틸
+          </button>
+        </nav>
+        <p id="editor-breadcrumb" class="editor-breadcrumb" hidden aria-live="polite"></p>
+        <div class="toolbar">
+          <button type="button" id="btn-add" class="btn btn-primary" data-i18n="options_add_row">스크립트 추가</button>
+          <button type="button" id="btn-export" class="btn" data-i18n="options_export">내보내기</button>
+          <button type="button" id="btn-import" class="btn" data-i18n="options_import">가져오기</button>
+          <input type="file" id="import-file" accept="application/json,.json" hidden>
+          <span id="save-status" class="save-status" aria-live="polite"></span>
+        </div>
+      </div>
+    </div>
+
     <div class="script-list-wrap">
       <div id="page-loading" class="page-loading">
         <span class="spinner" aria-hidden="true"></span>
@@ -76,30 +84,31 @@
         <div id="script-list" hidden></div>
       </main>
       <section id="panel-common-utils" class="options-panel common-utils-panel" hidden>
-        <div class="common-utils-card">
-          <div class="common-utils-card__header">
-            <div>
-              <h2 data-i18n="options_common_utils_title">공통 유틸</h2>
-              <p data-i18n="options_common_utils_description">
-                모든 페이지별 스크립트보다 먼저 실행됩니다. 반드시 export const utils = { ... } 형태로 작성하세요.
-              </p>
-            </div>
-            <label class="common-utils-card__enable">
-              <input type="checkbox" id="common-utils-enabled" checked>
-              <span data-i18n="options_enabled">활성</span>
-            </label>
+        <div class="common-utils-intro">
+          <div class="common-utils-intro__text">
+            <h2 data-i18n="options_common_utils_title">공통 유틸</h2>
+            <p data-i18n="options_common_utils_description">
+              활성 유틸 모듈이 합쳐져 모든 페이지별 스크립트보다 먼저 실행됩니다.
+              각 모듈은 export const utils = { ... } 형태로 작성하세요.
+            </p>
           </div>
-          <div class="common-utils-card__example">
-            <code>export const utils = { qs(selector) { return document.querySelector(selector); } };</code>
-          </div>
-          <div id="common-utils-editor"></div>
+          <label class="common-utils-intro__enable">
+            <input type="checkbox" id="common-utils-enabled" checked>
+            <span data-i18n="options_enabled">활성</span>
+          </label>
         </div>
+        <p id="common-utils-conflict" class="common-utils-conflict" hidden></p>
+        <div id="common-utils-list" class="common-utils-list"></div>
+        <p id="common-utils-empty" class="empty-state" hidden data-i18n="options_common_utils_empty">
+          유틸이 없습니다. 「유틸 추가」를 눌러 시작하세요.
+        </p>
       </section>
     </div>
   </div>
   <script src="../lib/match.js"></script>
   <script src="../lib/script-status.js"></script>
   <script src="../lib/editor-config.js"></script>
+  <script src="../lib/common-utils.js"></script>
   <script src="../vendor/codemirror/codemirror.bundle.js"></script>
   <script src="../lib/light-code-editor.js"></script>
   <script src="options.js"></script>

@@ -63,7 +63,24 @@
   "options_tab_common_utils": { "message": "Shared utils" },
   "options_common_utils_title": { "message": "Shared utils" },
   "options_common_utils_description": {
-    "message": "Runs before every page script. Write it as export const utils = { ... }. Page scripts can call helpers as utils.qs(...)."
+    "message": "Enabled util modules are merged and run before every page script. Write each module as export const utils = { ... }. Page scripts can call helpers as utils.qs(...)."
+  },
+  "options_add_util": { "message": "Add util" },
+  "options_breadcrumb_untitled": { "message": "(untitled)" },
+  "options_common_utils_empty": {
+    "message": "No utils yet. Click “Add util” to start."
+  },
+  "options_util_name_placeholder": { "message": "e.g. dom, time" },
+  "options_common_utils_conflict": {
+    "message": "Cannot save: overlapping util property names."
+  },
+  "options_common_utils_module_conflict": {
+    "message": "Overlapping keys: $1",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   },
   "options_empty": {
     "message": "No scripts yet. Click “Add script” to start."

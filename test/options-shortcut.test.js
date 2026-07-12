@@ -23,8 +23,11 @@ function createOptionsDom() {
     </main>
     <section id="panel-common-utils" hidden>
       <input id="common-utils-enabled" type="checkbox">
-      <div id="common-utils-editor"></div>
-    </section>`,
+      <p id="common-utils-conflict" hidden></p>
+      <div id="common-utils-list"></div>
+      <p id="common-utils-empty" hidden></p>
+    </section>
+    <p id="editor-breadcrumb" hidden></p>`,
     {
       pretendToBeVisual: true,
       url: "chrome-extension://test/options/options.html",
@@ -89,6 +92,20 @@ function loadOptionsScript(window, { setCalls }) {
     toChromeMatchPatterns: (pattern) => [pattern],
     urlMatchesPattern: () => true,
     urlToMatchPattern: () => "https://example.com/*",
+    EDITOR_MIN_LINES: 8,
+    EDITOR_MAX_LINES: 48,
+    normalizeCommonUtils: (raw) => ({
+      enabled: raw?.enabled !== false,
+      modules: Array.isArray(raw?.modules) ? raw.modules : [],
+    }),
+    createEmptyCommonUtilsModule: () => ({
+      id: "cu-new",
+      name: "",
+      enabled: true,
+      code: "",
+    }),
+    validateCommonUtils: () => ({ ok: true, conflicts: [] }),
+    findCommonUtilsKeyConflicts: () => [],
   };
   window.evaluateScriptStatus = () => "active";
   window.getScriptStatusMessage = () => "active";
