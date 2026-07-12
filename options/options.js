@@ -346,33 +346,76 @@ function updateEditorBreadcrumb() {
     return;
   }
 
+  /** @type {Array<{ label: string, getTarget: () => Element | null, focusEl?: () => HTMLElement | null }>} */
   const segments = [];
 
   if (activeEditorContext.kind === "script") {
-    const state = rowState.get(activeEditorContext.id);
+    const scriptId = activeEditorContext.id;
+    const state = rowState.get(scriptId);
     if (!state) {
       clearEditorBreadcrumb();
       return;
     }
-    const groupName = state.nameInput.value.trim() || breadcrumbUntitled();
-    const pattern = state.matchInput.value.trim() || defaultMatchPattern;
+    const card = listEl.querySelector(
+      `.script-card[data-id="${CSS.escape(scriptId)}"]`,
+    );
     const moduleId = activeEditorContext.moduleId;
     const moduleState = moduleId ? state.modules.get(moduleId) : null;
-    const moduleName = moduleState?.nameInput.value.trim() || breadcrumbUntitled();
+    const moduleCard = moduleId
+      ? card?.querySelector(
+          `.script-module-card[data-module-id="${CSS.escape(moduleId)}"]`,
+        )
+      : null;
+
+    const groupName = state.nameInput.value.trim() || breadcrumbUntitled();
+    const pattern = state.matchInput.value.trim() || defaultMatchPattern;
+    const moduleName =
+      moduleState?.nameInput.value.trim() || breadcrumbUntitled();
+
     segments.push(
-      msg("options_tab_scripts", "페이지별 스크립트"),
-      groupName,
-      moduleName,
-      pattern,
+      {
+        label: msg("options_tab_scripts", "페이지별 스크립트"),
+        getTarget: () => panelScriptsEl,
+      },
+      {
+        label: groupName,
+        getTarget: () => card,
+        focusEl: () => state.nameInput,
+      },
+      {
+        label: moduleName,
+        getTarget: () => moduleCard,
+        focusEl: () => moduleState?.nameInput ?? null,
+      },
+      {
+        label: pattern,
+        getTarget: () => card,
+        focusEl: () => state.matchInput,
+      },
     );
   } else {
-    const state = utilRowState.get(activeEditorContext.id);
+    const utilId = activeEditorContext.id;
+    const state = utilRowState.get(utilId);
     if (!state) {
       clearEditorBreadcrumb();
       return;
     }
+    const card = commonUtilsListEl.querySelector(
+      `.util-card[data-id="${CSS.escape(utilId)}"]`,
+    );
     const name = state.nameInput.value.trim() || breadcrumbUntitled();
-    segments.push(msg("options_tab_common_utils", "공통 유틸"), name);
+
+    segments.push(
+      {
+        label: msg("options_tab_common_utils", "공통 유틸"),
+        getTarget: () => panelCommonUtilsEl,
+      },
+      {
+        label: name,
+        getTarget: () => card,
+        focusEl: () => state.nameInput,
+      },
+    );
   }
 
   editorBreadcrumbEl.replaceChildren();
@@ -384,17 +427,62 @@ function updateEditorBreadcrumb() {
       sep.setAttribute("aria-hidden", "true");
       editorBreadcrumbEl.append(sep);
     }
-    const seg = document.createElement("span");
+    const seg = document.createElement("button");
+    seg.type = "button";
     seg.className = "editor-breadcrumb__seg";
     if (index === 0) seg.classList.add("editor-breadcrumb__seg--muted");
     if (index === segments.length - 1) {
       seg.classList.add("editor-breadcrumb__seg--strong");
     }
-    seg.textContent = segment;
-    seg.title = segment;
+    seg.textContent = segment.label;
+    seg.title = segment.label;
+    seg.addEventListener("click", () => {
+      scrollBreadcrumbTarget(segment.getTarget(), segment.focusEl?.() ?? null);
+    });
     editorBreadcrumbEl.append(seg);
   });
   editorBreadcrumbEl.hidden = false;
+}
+
+function ensureCardExpanded(card) {
+  if (!card?.classList.contains("is-collapsed")) return;
+  card.querySelector(".btn-collapse-icon")?.click();
+}
+
+function flashScrollTarget(el) {
+  if (!el) return;
+  el.classList.remove("is-scroll-target");
+  // reflow so the animation can replay
+  void el.offsetWidth;
+  el.classList.add("is-scroll-target");
+  window.setTimeout(() => el.classList.remove("is-scroll-target"), 1200);
+}
+
+function scrollBreadcrumbTarget(target, focusEl = null) {
+  if (!target) return;
+
+  ensureCardExpanded(target.closest?.(".script-module-card, .util-card") || target);
+  if (target.classList?.contains("script-card")) {
+    target
+      .querySelectorAll(".script-module-card.is-collapsed")
+      .forEach((card) => {
+        if (focusEl && card.contains(focusEl)) ensureCardExpanded(card);
+      });
+  }
+
+  const stickyOffset =
+    document.getElementById("sticky-chrome")?.getBoundingClientRect().height ??
+    0;
+  const top =
+    target.getBoundingClientRect().top + window.scrollY - stickyOffset - 12;
+  window.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  flashScrollTarget(target);
+
+  if (focusEl && typeof focusEl.focus === "function") {
+    window.setTimeout(() => {
+      focusEl.focus({ preventScroll: true });
+    }, 250);
+  }
 }
 
 function bindEditorContext(card, kind, id, moduleId = null) {
