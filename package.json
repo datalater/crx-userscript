@@ -4,7 +4,7 @@
   "private": true,
   "type": "commonjs",
   "scripts": {
-    "build:codemirror": "mkdir -p vendor/codemirror && esbuild src/codemirror-entry.js --bundle --format=iife --global-name=CodeMirrorBundle --outfile=vendor/codemirror/codemirror.bundle.js --minify",
+    "build": "mkdir -p vendor/codemirror && esbuild src/codemirror-entry.js --bundle --format=iife --global-name=CodeMirrorBundle --outfile=vendor/codemirror/codemirror.bundle.js --minify",
     "test": "node --test"
   },
   "devDependencies": {
