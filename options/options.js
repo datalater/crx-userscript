@@ -35,12 +35,24 @@ const commonUtilsEmptyEl = document.getElementById("common-utils-empty");
 const commonUtilsConflictEl = document.getElementById("common-utils-conflict");
 const editorBreadcrumbEl = document.getElementById("editor-breadcrumb");
 
-/** @type {Map<string, { editor: ReturnType<typeof createLightCodeEditor> }>} */
+/** @type {Map<string, {
+ *   matchInput: HTMLInputElement,
+ *   matchHint: HTMLElement,
+ *   statusChip: HTMLElement,
+ *   nameInput: HTMLInputElement,
+ *   enableInput: HTMLInputElement,
+ *   modulesEl: HTMLElement,
+ *   modules: Map<string, {
+ *     editor: ReturnType<typeof createLightCodeEditor>,
+ *     nameInput: HTMLInputElement,
+ *     enableInput: HTMLInputElement,
+ *   }>
+ * }>} */
 const rowState = new Map();
 /** @type {Map<string, { editor: ReturnType<typeof createLightCodeEditor>, nameInput: HTMLInputElement, enableInput: HTMLInputElement, conflictHint: HTMLElement }>} */
 const utilRowState = new Map();
 
-/** @type {{ kind: "script" | "util", id: string } | null} */
+/** @type {{ kind: "script" | "util", id: string, moduleId?: string | null } | null} */
 let activeEditorContext = null;
 
 let scripts = [];
@@ -120,7 +132,11 @@ async function loadScriptsData({ focusFromSession = false } = {}) {
     CUS_COMMON_UTILS_STORAGE_KEY,
   ]);
   scripts = Array.isArray(stored[CUS_STORAGE_KEY])
-    ? stored[CUS_STORAGE_KEY]
+    ? stored[CUS_STORAGE_KEY].map((script) =>
+        cusUserScripts.normalizePageScript(script, {
+          matchPattern: defaultMatchPattern,
+        }),
+      )
     : [];
   commonUtils = cusUserScripts.normalizeCommonUtils(
     stored[CUS_COMMON_UTILS_STORAGE_KEY],
@@ -183,7 +199,7 @@ async function focusScriptFromSession() {
     if (!card) return;
     card.classList.add("script-card--focus");
     card.scrollIntoView({ behavior: "smooth", block: "center" });
-    rowState.get(focusId)?.editor?.focus();
+    rowState.get(focusId)?.modules?.values()?.next()?.value?.editor?.focus();
   });
 }
 
@@ -312,8 +328,8 @@ function clearEditorBreadcrumb() {
   updateEditorBreadcrumb();
 }
 
-function setEditorContext(kind, id) {
-  activeEditorContext = { kind, id };
+function setEditorContext(kind, id, moduleId = null) {
+  activeEditorContext = { kind, id, moduleId };
   updateEditorBreadcrumb();
 }
 
@@ -338,11 +354,15 @@ function updateEditorBreadcrumb() {
       clearEditorBreadcrumb();
       return;
     }
-    const name = state.nameInput.value.trim() || breadcrumbUntitled();
+    const groupName = state.nameInput.value.trim() || breadcrumbUntitled();
     const pattern = state.matchInput.value.trim() || defaultMatchPattern;
+    const moduleId = activeEditorContext.moduleId;
+    const moduleState = moduleId ? state.modules.get(moduleId) : null;
+    const moduleName = moduleState?.nameInput.value.trim() || breadcrumbUntitled();
     segments.push(
       msg("options_tab_scripts", "페이지별 스크립트"),
-      name,
+      groupName,
+      moduleName,
       pattern,
     );
   } else {
@@ -377,18 +397,58 @@ function updateEditorBreadcrumb() {
   editorBreadcrumbEl.hidden = false;
 }
 
-function bindEditorContext(card, kind, id) {
-  card.addEventListener("focusin", () => setEditorContext(kind, id));
+function bindEditorContext(card, kind, id, moduleId = null) {
+  card.addEventListener("focusin", () => setEditorContext(kind, id, moduleId));
+}
+
+function createCollapseToggle(card, panelEl) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "btn-collapse-icon";
+
+  const syncLabel = () => {
+    const collapsed = card.classList.contains("is-collapsed");
+    button.setAttribute("aria-expanded", collapsed ? "false" : "true");
+    const label = collapsed
+      ? msg("options_expand_editor", "펼치기")
+      : msg("options_collapse_editor", "접기");
+    button.setAttribute("aria-label", label);
+    button.title = label;
+    button.textContent = collapsed ? "▸" : "▾";
+    panelEl.hidden = collapsed;
+  };
+
+  button.addEventListener("click", () => {
+    card.classList.toggle("is-collapsed");
+    syncLabel();
+  });
+
+  syncLabel();
+  return button;
+}
+
+function confirmDestructiveDelete({ name = "", code = "" } = {}) {
+  const hasContent = Boolean(String(name).trim() || String(code).trim());
+  if (!hasContent) return true;
+  return window.confirm(
+    msg(
+      "options_delete_confirm",
+      "삭제하면 되돌릴 수 없습니다. 계속할까요?",
+    ),
+  );
 }
 
 function createEmptyScript() {
-  return {
-    id: createScriptId(),
-    name: "",
-    matchPattern: defaultMatchPattern,
-    enabled: true,
-    code: "",
-  };
+  return cusUserScripts.normalizePageScript(
+    {
+      id: createScriptId(),
+      name: "",
+      matchPattern: defaultMatchPattern,
+      enabled: true,
+      modules: [cusUserScripts.createEmptyPageScriptModule()],
+    },
+    { matchPattern: defaultMatchPattern },
+  );
 }
 
 function createScriptId() {
@@ -397,6 +457,9 @@ function createScriptId() {
 
 function addRow(script, options = {}) {
   const { persist = true } = options;
+  const normalized = cusUserScripts.normalizePageScript(script, {
+    matchPattern: defaultMatchPattern,
+  });
 
   if (!listEl.querySelector(".script-card")) {
     listEl.innerHTML = "";
@@ -404,7 +467,7 @@ function addRow(script, options = {}) {
 
   const card = document.createElement("article");
   card.className = "script-card";
-  card.dataset.id = script.id;
+  card.dataset.id = normalized.id;
 
   const header = document.createElement("header");
   header.className = "script-card__header";
@@ -416,7 +479,7 @@ function addRow(script, options = {}) {
   nameField.innerHTML = `<label>${msg("options_name_label", "이름")}</label>`;
   const nameInput = document.createElement("input");
   nameInput.type = "text";
-  nameInput.value = script.name || "";
+  nameInput.value = normalized.name || "";
   nameInput.placeholder = msg(
     "options_name_placeholder",
     "예: ChatGPT 새로고침",
@@ -428,7 +491,7 @@ function addRow(script, options = {}) {
   matchField.innerHTML = `<label>${msg("options_match_label", "URL match")}</label>`;
   const matchInput = document.createElement("input");
   matchInput.type = "text";
-  matchInput.value = script.matchPattern || defaultMatchPattern;
+  matchInput.value = normalized.matchPattern || defaultMatchPattern;
   matchInput.placeholder = defaultMatchPattern;
   matchInput.spellcheck = false;
   const matchHint = document.createElement("p");
@@ -444,7 +507,7 @@ function addRow(script, options = {}) {
   enableLabel.className = "script-card__enable";
   const enableInput = document.createElement("input");
   enableInput.type = "checkbox";
-  enableInput.checked = script.enabled !== false;
+  enableInput.checked = normalized.enabled !== false;
   enableLabel.append(
     enableInput,
     document.createTextNode(msg("options_enabled", "활성")),
@@ -454,7 +517,7 @@ function addRow(script, options = {}) {
   deleteBtn.type = "button";
   deleteBtn.className = "btn btn-danger";
   deleteBtn.textContent = msg("options_delete", "삭제");
-  deleteBtn.addEventListener("click", () => removeRow(script.id));
+  deleteBtn.addEventListener("click", () => removeRow(normalized.id));
 
   const headerActions = document.createElement("div");
   headerActions.className = "script-card__header-actions";
@@ -463,68 +526,69 @@ function addRow(script, options = {}) {
 
   const body = document.createElement("div");
   body.className = "script-card__body";
-  const codeHead = document.createElement("div");
-  codeHead.className = "script-card__code-head";
-  const codeLabel = document.createElement("span");
-  codeLabel.className = "script-card__code-label";
-  codeLabel.textContent = msg("options_code_label", "JavaScript");
+
+  const modulesHead = document.createElement("div");
+  modulesHead.className = "script-card__modules-head";
+  const modulesLabel = document.createElement("span");
+  modulesLabel.className = "script-card__code-label";
+  modulesLabel.textContent = msg("options_script_modules_label", "모듈");
+  const addModuleBtn = document.createElement("button");
+  addModuleBtn.type = "button";
+  addModuleBtn.className = "btn btn-example";
+  addModuleBtn.textContent = msg("options_add_script_module", "모듈 추가");
   const exampleBtn = document.createElement("button");
   exampleBtn.type = "button";
   exampleBtn.className = "btn btn-example";
   exampleBtn.textContent = msg("options_code_example", "example");
-  codeHead.append(codeLabel, exampleBtn);
+  modulesHead.append(modulesLabel, addModuleBtn, exampleBtn);
 
-  const editorHost = document.createElement("div");
-  body.append(codeHead, editorHost);
+  const modulesEl = document.createElement("div");
+  modulesEl.className = "script-card__modules";
 
+  body.append(modulesHead, modulesEl);
   card.append(header, body);
   listEl.append(card);
-  bindEditorContext(card, "script", script.id);
 
-  const editor = createLightCodeEditor(editorHost, {
-    value: script.code || "",
-    placeholder: msg(
-      "options_code_placeholder",
-      "registerCleanup(() => { /* cleanup */ });",
-    ),
-    minLines: cusUserScripts.EDITOR_MIN_LINES,
-    maxLines: cusUserScripts.EDITOR_MAX_LINES,
-    onChange: scheduleSave,
-  });
-
-  exampleBtn.addEventListener("click", () => {
-    showCopyablePopup(VISIBILITYCHANGE_EXAMPLE);
-  });
-
-  rowState.set(script.id, {
-    editor,
+  const modules = new Map();
+  rowState.set(normalized.id, {
     matchInput,
     matchHint,
     statusChip,
     nameInput,
     enableInput,
+    modulesEl,
+    modules,
+  });
+
+  normalized.modules.forEach((module) => {
+    addScriptModule(normalized.id, module, { persist: false });
+  });
+
+  addModuleBtn.addEventListener("click", () => {
+    addScriptModule(
+      normalized.id,
+      cusUserScripts.createEmptyPageScriptModule(),
+    );
+    scheduleSave();
+  });
+  exampleBtn.addEventListener("click", () => {
+    showCopyablePopup(VISIBILITYCHANGE_EXAMPLE);
   });
 
   const refreshRowUi = () => {
-    updateMatchHint(matchInput, matchHint, script.id);
-    updateStatusChip(script.id, statusChip, enableInput);
+    updateMatchHint(matchInput, matchHint, normalized.id);
+    updateStatusChip(normalized.id, statusChip, enableInput);
   };
 
   matchInput.addEventListener("input", () => {
     refreshRowUi();
-    if (
-      activeEditorContext?.kind === "script" &&
-      activeEditorContext.id === script.id
-    ) {
+    if (activeEditorContext?.kind === "script" && activeEditorContext.id === normalized.id) {
       updateEditorBreadcrumb();
     }
     scheduleSave();
   });
   nameInput.addEventListener("input", () => {
-    if (
-      activeEditorContext?.kind === "script" &&
-      activeEditorContext.id === script.id
-    ) {
+    if (activeEditorContext?.kind === "script" && activeEditorContext.id === normalized.id) {
       updateEditorBreadcrumb();
     }
     scheduleSave();
@@ -537,6 +601,151 @@ function addRow(script, options = {}) {
   refreshRowUi();
 
   if (persist) scheduleSave();
+}
+
+function addScriptModule(scriptId, module, options = {}) {
+  const { persist = true } = options;
+  const scriptState = rowState.get(scriptId);
+  if (!scriptState) return;
+
+  const normalized = {
+    id: module.id || cusUserScripts.createPageScriptModuleId(),
+    name: typeof module.name === "string" ? module.name : "",
+    enabled: module.enabled !== false,
+    code: typeof module.code === "string" ? module.code : "",
+  };
+
+  const card = document.createElement("div");
+  card.className = "script-module-card";
+  card.dataset.moduleId = normalized.id;
+
+  const header = document.createElement("div");
+  header.className = "script-module-card__header";
+
+  const editorHost = document.createElement("div");
+  editorHost.className = "script-module-card__editor";
+  const collapseBtn = createCollapseToggle(card, editorHost);
+
+  const nameBlock = document.createElement("div");
+  nameBlock.className = "script-module-card__name-block";
+
+  const nameLabel = document.createElement("label");
+  nameLabel.className = "script-module-card__name";
+  nameLabel.textContent = msg("options_name_label", "이름");
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.value = normalized.name;
+  nameInput.placeholder = msg(
+    "options_script_module_name_placeholder",
+    "예: 탭 복귀 시 새로고침",
+  );
+  nameLabel.append(nameInput);
+  nameBlock.append(collapseBtn, nameLabel);
+
+  const enableLabel = document.createElement("label");
+  enableLabel.className = "script-module-card__enable";
+  const enableInput = document.createElement("input");
+  enableInput.type = "checkbox";
+  enableInput.checked = normalized.enabled;
+  enableLabel.append(
+    enableInput,
+    document.createTextNode(` ${msg("options_enabled", "활성")}`),
+  );
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.type = "button";
+  deleteBtn.className = "btn btn-danger btn-compact";
+  deleteBtn.textContent = msg("options_delete", "삭제");
+  deleteBtn.addEventListener("click", () => removeScriptModule(scriptId, normalized.id));
+
+  const headerActions = document.createElement("div");
+  headerActions.className = "script-module-card__actions";
+  headerActions.append(enableLabel, deleteBtn);
+  header.append(nameBlock, headerActions);
+
+  card.append(header, editorHost);
+  scriptState.modulesEl.append(card);
+  bindEditorContext(card, "script", scriptId, normalized.id);
+
+  const editor = createLightCodeEditor(editorHost, {
+    value: normalized.code,
+    placeholder: msg(
+      "options_code_placeholder",
+      "registerCleanup(() => { /* cleanup */ });",
+    ),
+    minLines: cusUserScripts.EDITOR_MIN_LINES,
+    maxLines: cusUserScripts.EDITOR_MAX_LINES,
+    onChange: scheduleSave,
+  });
+
+  scriptState.modules.set(normalized.id, {
+    editor,
+    nameInput,
+    enableInput,
+  });
+
+  nameInput.addEventListener("input", () => {
+    if (
+      activeEditorContext?.kind === "script" &&
+      activeEditorContext.id === scriptId &&
+      activeEditorContext.moduleId === normalized.id
+    ) {
+      updateEditorBreadcrumb();
+    }
+    scheduleSave();
+  });
+  enableInput.addEventListener("change", () => {
+    const parent = rowState.get(scriptId);
+    if (parent) {
+      updateStatusChip(scriptId, parent.statusChip, parent.enableInput);
+    }
+    scheduleSave();
+  });
+
+  if (persist) {
+    const parent = rowState.get(scriptId);
+    if (parent) {
+      updateStatusChip(scriptId, parent.statusChip, parent.enableInput);
+    }
+  }
+}
+
+function removeScriptModule(scriptId, moduleId) {
+  const scriptState = rowState.get(scriptId);
+  if (!scriptState) return;
+
+  const moduleState = scriptState.modules.get(moduleId);
+  if (
+    !confirmDestructiveDelete({
+      name: moduleState?.nameInput?.value,
+      code: moduleState?.editor?.getValue(),
+    })
+  ) {
+    return;
+  }
+
+  moduleState?.editor?.destroy();
+  scriptState.modules.delete(moduleId);
+  scriptState.modulesEl
+    .querySelector(`[data-module-id="${CSS.escape(moduleId)}"]`)
+    ?.remove();
+
+  if (
+    activeEditorContext?.kind === "script" &&
+    activeEditorContext.id === scriptId &&
+    activeEditorContext.moduleId === moduleId
+  ) {
+    clearEditorBreadcrumb();
+  }
+
+  if (!scriptState.modules.size) {
+    addScriptModule(scriptId, cusUserScripts.createEmptyPageScriptModule(), {
+      persist: false,
+    });
+  }
+
+  updateStatusChip(scriptId, scriptState.statusChip, scriptState.enableInput);
+  scheduleSave();
 }
 
 function msg(key, fallback) {
@@ -619,23 +828,51 @@ function updateStatusChip(scriptId, chipEl, enableInput) {
 
 function collectScriptFromCard(scriptId, enableInput) {
   const state = rowState.get(scriptId);
+  const modules = [];
+  state?.modules?.forEach((moduleState, moduleId) => {
+    modules.push({
+      id: moduleId,
+      name: moduleState.nameInput.value,
+      enabled: Boolean(moduleState.enableInput.checked),
+      code: moduleState.editor.getValue(),
+    });
+  });
+
   return {
     id: scriptId,
     name: state?.nameInput?.value ?? "",
     matchPattern: state?.matchInput?.value?.trim() ?? "",
     enabled: Boolean(enableInput?.checked),
-    code: state?.editor?.getValue() ?? "",
+    modules,
   };
 }
 
 function removeRow(id) {
   const state = rowState.get(id);
-  state?.editor.destroy();
+  const script = collectScriptFromCard(id, state?.enableInput);
+  const hasContent =
+    Boolean(script.name?.trim()) ||
+    script.modules.some(
+      (module) => module.name?.trim() || module.code?.trim(),
+    );
+  if (
+    hasContent &&
+    !window.confirm(
+      msg(
+        "options_delete_confirm",
+        "삭제하면 되돌릴 수 없습니다. 계속할까요?",
+      ),
+    )
+  ) {
+    return;
+  }
+
+  state?.modules?.forEach((moduleState) => moduleState.editor.destroy());
   rowState.delete(id);
   if (activeEditorContext?.kind === "script" && activeEditorContext.id === id) {
     clearEditorBreadcrumb();
   }
-  scripts = scripts.filter((script) => script.id !== id);
+  scripts = scripts.filter((item) => item.id !== id);
 
   listEl.querySelector(`[data-id="${id}"]`)?.remove();
 
@@ -843,8 +1080,15 @@ function addUtilModule(module, options = {}) {
   const header = document.createElement("div");
   header.className = "util-card__header";
 
+  const body = document.createElement("div");
+  body.className = "util-card__body";
+  const collapseBtn = createCollapseToggle(card, body);
+
   const meta = document.createElement("div");
   meta.className = "util-card__meta";
+
+  const nameBlock = document.createElement("div");
+  nameBlock.className = "util-card__name-block";
 
   const nameLabel = document.createElement("label");
   nameLabel.textContent = msg("options_name_label", "이름");
@@ -856,7 +1100,8 @@ function addUtilModule(module, options = {}) {
     "예: dom, time",
   );
   nameLabel.append(nameInput);
-  meta.append(nameLabel);
+  nameBlock.append(collapseBtn, nameLabel);
+  meta.append(nameBlock);
 
   const enableLabel = document.createElement("label");
   enableLabel.className = "util-card__enable";
@@ -870,7 +1115,7 @@ function addUtilModule(module, options = {}) {
 
   const deleteBtn = document.createElement("button");
   deleteBtn.type = "button";
-  deleteBtn.className = "btn btn-danger";
+  deleteBtn.className = "btn btn-danger btn-compact";
   deleteBtn.textContent = msg("options_delete", "삭제");
   deleteBtn.addEventListener("click", () => removeUtilModule(module.id));
 
@@ -878,9 +1123,6 @@ function addUtilModule(module, options = {}) {
   headerActions.className = "util-card__header-actions";
   headerActions.append(enableLabel, deleteBtn);
   header.append(meta, headerActions);
-
-  const body = document.createElement("div");
-  body.className = "util-card__body";
 
   const codeHead = document.createElement("div");
   codeHead.className = "util-card__code-head";
@@ -944,6 +1186,15 @@ function addUtilModule(module, options = {}) {
 
 function removeUtilModule(id) {
   const state = utilRowState.get(id);
+  if (
+    !confirmDestructiveDelete({
+      name: state?.nameInput?.value,
+      code: state?.editor?.getValue(),
+    })
+  ) {
+    return;
+  }
+
   state?.editor?.destroy();
   utilRowState.delete(id);
   if (activeEditorContext?.kind === "util" && activeEditorContext.id === id) {
@@ -1029,17 +1280,15 @@ async function onImportFile(event) {
 }
 
 function normalizeImportedScript(raw) {
-  return {
-    id: raw.id || createScriptId(),
-    name: typeof raw.name === "string" ? raw.name : "",
-    matchPattern: raw.matchPattern || defaultMatchPattern,
-    enabled: raw.enabled !== false,
-    code: typeof raw.code === "string" ? raw.code : "",
-  };
+  return cusUserScripts.normalizePageScript(raw, {
+    matchPattern: defaultMatchPattern,
+  });
 }
 
 function teardownRows() {
-  rowState.forEach((state) => state.editor.destroy());
+  rowState.forEach((state) => {
+    state.modules?.forEach((moduleState) => moduleState.editor.destroy());
+  });
   rowState.clear();
   listEl.innerHTML = "";
   if (activeEditorContext?.kind === "script") clearEditorBreadcrumb();

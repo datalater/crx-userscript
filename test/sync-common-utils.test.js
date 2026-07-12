@@ -78,6 +78,34 @@ test("sync prepends exported utils namespace before each page script", async () 
   assert.ok(code.indexOf("const utils = {") < code.indexOf("console.log(utils.qs('h1'));"));
 });
 
+test("sync merges page script modules into one registration", async () => {
+  const { context, registeredDefinitions } = loadSyncScript({
+    storageValue: {
+      commonUtils: { enabled: false, modules: [] },
+      userScripts: [
+        {
+          id: "script-1",
+          matchPattern: "https://example.com/*",
+          enabled: true,
+          modules: [
+            { id: "m1", name: "a", enabled: true, code: "console.log('a');" },
+            { id: "m2", name: "b", enabled: true, code: "console.log('b');" },
+          ],
+        },
+      ],
+    },
+  });
+
+  await context.syncUserScriptsRegistry();
+
+  assert.equal(registeredDefinitions.length, 1);
+  const code = registeredDefinitions[0].js[0].code;
+  assert.ok(code.includes("cus:module a"));
+  assert.ok(code.includes("cus:module b"));
+  assert.ok(code.includes("console.log('a')"));
+  assert.ok(code.includes("console.log('b')"));
+});
+
 test("sync merges multiple common util modules into one utils object", async () => {
   const { context, registeredDefinitions } = loadSyncScript({
     storageValue: {

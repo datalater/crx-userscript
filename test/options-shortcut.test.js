@@ -106,6 +106,33 @@ function loadOptionsScript(window, { setCalls }) {
     }),
     validateCommonUtils: () => ({ ok: true, conflicts: [] }),
     findCommonUtilsKeyConflicts: () => [],
+    createPageScriptModuleId: () => "sm-new",
+    createEmptyPageScriptModule: () => ({
+      id: "sm-new",
+      name: "",
+      enabled: true,
+      code: "",
+    }),
+    normalizePageScript: (raw) => ({
+      id: raw?.id || "us-1",
+      name: raw?.name || "",
+      matchPattern: raw?.matchPattern || "https://example.com/*",
+      enabled: raw?.enabled !== false,
+      modules: Array.isArray(raw?.modules)
+        ? raw.modules
+        : [
+            {
+              id: "sm-1",
+              name: raw?.name || "main",
+              enabled: true,
+              code: typeof raw?.code === "string" ? raw.code : "",
+            },
+          ],
+    }),
+    hasRunnablePageScriptCode: (script) =>
+      Array.isArray(script?.modules)
+        ? script.modules.some((module) => module.enabled && String(module.code || "").trim())
+        : Boolean(String(script?.code || "").trim()),
   };
   window.evaluateScriptStatus = () => "active";
   window.getScriptStatusMessage = () => "active";

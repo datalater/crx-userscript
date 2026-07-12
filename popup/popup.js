@@ -246,7 +246,9 @@ async function getRegisteredIds() {
 
 async function renderList() {
   const { userScripts = [] } = await chrome.storage.local.get(CUS_STORAGE_KEY);
-  cachedUserScripts = userScripts;
+  cachedUserScripts = userScripts.map((script) =>
+    cusUserScripts.normalizePageScript(script)
+  );
   updatePatternHint();
 
   const tabUrl = isReloadableUrl(activeTab?.url) ? activeTab.url : "";
@@ -254,18 +256,20 @@ async function renderList() {
   const apiAvailable = isUserScriptsApiAvailable();
 
   const context = { tabUrl, registeredIds, apiAvailable };
-  const matching = userScripts.filter(
+  const matching = cachedUserScripts.filter(
     (script) => tabUrl && cusUserScripts.urlMatchesPattern(script.matchPattern, tabUrl)
   );
   const nonMatchingCount = tabUrl
-    ? userScripts.filter(
+    ? cachedUserScripts.filter(
         (s) => !cusUserScripts.urlMatchesPattern(s.matchPattern || "", tabUrl)
       ).length
-    : userScripts.length;
+    : cachedUserScripts.length;
 
   listEl.innerHTML = "";
 
-  const enabledMatching = matching.filter((s) => s.enabled !== false).length;
+  const enabledMatching = matching.filter(
+    (s) => s.enabled !== false && cusUserScripts.hasRunnablePageScriptCode(s)
+  ).length;
   renderPageStatus(matching.length, enabledMatching);
 
   const showSummary = matching.length > 0;
@@ -360,16 +364,21 @@ async function addScriptForPage() {
     return;
   }
   const id = createScriptId();
-  const script = {
+  const script = cusUserScripts.normalizePageScript({
     id,
     name: hostLabelFromPattern(pattern),
     matchPattern: pattern,
     enabled: true,
-    code: msg("popup_default_code", "// 전체 관리에서 코드를 편집하세요."),
-  };
+    modules: [
+      cusUserScripts.createEmptyPageScriptModule({
+        name: "",
+        code: msg("popup_default_code", "// 전체 관리에서 코드를 편집하세요."),
+      }),
+    ],
+  });
 
   await chrome.storage.local.set({
-    [CUS_STORAGE_KEY]: [...userScripts, script],
+    [CUS_STORAGE_KEY]: [...userScripts.map((item) => cusUserScripts.normalizePageScript(item)), script],
   });
 
   await requestRegistrySync();
