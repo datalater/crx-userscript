@@ -8,6 +8,10 @@
   },
   "popup_match_label": { "message": "Patterns matching the current page" },
   "popup_add_script": { "message": "Add script" },
+  "popup_edit_script": { "message": "Edit script" },
+  "popup_pattern_registered": {
+    "message": "A script for this URL pattern is already set up."
+  },
   "popup_pattern_no_match": {
     "message": "Does not match the current tab URL."
   },

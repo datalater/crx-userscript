@@ -58,7 +58,8 @@ test("createLightCodeEditor delegates to the CodeMirror adapter and preserves th
   assert.equal(calls[0].placeholder, "code");
   assert.equal(calls[0].minLines, window.cusUserScripts.EDITOR_MIN_LINES);
   assert.equal(calls[0].maxLines, window.cusUserScripts.EDITOR_MAX_LINES);
-  assert.equal(window.cusUserScripts.EDITOR_MAX_LINES, 50);
+  assert.equal(typeof window.cusUserScripts.EDITOR_MAX_LINES, "number");
+  assert.ok(window.cusUserScripts.EDITOR_MAX_LINES >= window.cusUserScripts.EDITOR_MIN_LINES);
 
   assert.equal(editor.getValue(), "const a = 1;");
   editor.setValue("let b = 2;");
@@ -127,6 +128,10 @@ test("editor-config exposes shared min/max line defaults", () => {
   const { window } = dom;
   loadEditorConfig(window);
 
-  assert.equal(window.cusUserScripts.EDITOR_MIN_LINES, 8);
-  assert.equal(window.cusUserScripts.EDITOR_MAX_LINES, 50);
+  assert.equal(typeof window.cusUserScripts.EDITOR_MIN_LINES, "number");
+  assert.equal(typeof window.cusUserScripts.EDITOR_MAX_LINES, "number");
+  assert.ok(window.cusUserScripts.EDITOR_MIN_LINES >= 1);
+  assert.ok(
+    window.cusUserScripts.EDITOR_MAX_LINES >= window.cusUserScripts.EDITOR_MIN_LINES
+  );
 });

@@ -14,6 +14,12 @@
   "popup_add_script": {
     "message": "스크립트 추가"
   },
+  "popup_edit_script": {
+    "message": "스크립트 수정"
+  },
+  "popup_pattern_registered": {
+    "message": "이 URL 패턴의 스크립트가 이미 있어요."
+  },
   "popup_pattern_no_match": {
     "message": "현재 탭 URL과 맞지 않습니다."
   },

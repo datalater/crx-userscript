@@ -11,6 +11,8 @@ const otherCountEl = document.getElementById("other-count");
 let activeTab = null;
 let defaultPattern = "https?://*/*";
 let cachedUserScripts = [];
+/** @type {string | null} */
+let pendingEditScriptId = null;
 
 initI18n();
 init();
@@ -26,7 +28,13 @@ document.getElementById("btn-reload").addEventListener("click", async () => {
   window.close();
 });
 
-document.getElementById("btn-add").addEventListener("click", addScriptForPage);
+document.getElementById("btn-add").addEventListener("click", () => {
+  if (pendingEditScriptId) {
+    openOptionsForScript(pendingEditScriptId);
+    return;
+  }
+  addScriptForPage();
+});
 
 patternInputEl.addEventListener("input", updatePatternHint);
 
@@ -98,9 +106,9 @@ function renderPageRule() {
 
   pageRuleEl.hidden = !canUsePage;
   document.getElementById("btn-reload").disabled = !canUsePage;
-  document.getElementById("btn-add").disabled = !canUsePage;
 
   if (!canUsePage) {
+    setAddButtonMode({ disabled: true });
     pageStatusEl.textContent = msg("popup_no_http_tab", "http(s) 웹 페이지 탭이 아닙니다");
     pageStatusEl.classList.add("page-status--muted");
     return;
@@ -111,43 +119,73 @@ function renderPageRule() {
   updatePatternHint();
 }
 
+function setAddButtonMode({ disabled, editScriptId = null }) {
+  const btnAdd = document.getElementById("btn-add");
+  pendingEditScriptId = editScriptId;
+  btnAdd.disabled = disabled;
+  btnAdd.textContent = editScriptId
+    ? msg("popup_edit_script", "스크립트 수정")
+    : msg("popup_add_script", "스크립트 추가");
+}
+
+function showPatternHint(text, tone = "error") {
+  patternHintEl.hidden = false;
+  patternHintEl.textContent = text;
+  patternHintEl.classList.toggle("page-rule__hint--error", tone === "error");
+  patternHintEl.classList.toggle("page-rule__hint--info", tone === "info");
+}
+
+function clearPatternHint() {
+  patternHintEl.hidden = true;
+  patternHintEl.textContent = "";
+  patternHintEl.classList.remove("page-rule__hint--error", "page-rule__hint--info");
+}
+
 function updatePatternHint() {
   const pattern = patternInputEl.value.trim();
   const tabUrl = isReloadableUrl(activeTab?.url) ? activeTab.url : "";
   const re = cusUserScripts.matchPatternToRegExp(pattern);
 
-  patternHintEl.hidden = true;
+  clearPatternHint();
   patternInputEl.classList.remove("is-invalid");
 
   if (!pattern) {
-    patternHintEl.hidden = false;
-    patternHintEl.textContent = msg("options_match_empty", "패턴을 입력하세요.");
+    showPatternHint(msg("options_match_empty", "패턴을 입력하세요."), "error");
     patternInputEl.classList.add("is-invalid");
-    document.getElementById("btn-add").disabled = true;
+    setAddButtonMode({ disabled: true });
     return;
   }
 
   if (!re) {
-    patternHintEl.hidden = false;
-    patternHintEl.textContent = msg("options_match_invalid", "패턴 형식이 올바르지 않습니다.");
+    showPatternHint(
+      msg("options_match_invalid", "패턴 형식이 올바르지 않습니다."),
+      "error"
+    );
     patternInputEl.classList.add("is-invalid");
-    document.getElementById("btn-add").disabled = true;
+    setAddButtonMode({ disabled: true });
     return;
   }
 
-  if (cusUserScripts.findScriptWithMatchPattern(pattern, cachedUserScripts)) {
-    patternHintEl.hidden = false;
-    patternHintEl.textContent = msg("match_duplicate", "동일한 URL 패턴이 이미 등록되어 있습니다.");
-    patternInputEl.classList.add("is-invalid");
-    document.getElementById("btn-add").disabled = true;
+  const existing = cusUserScripts.findScriptWithMatchPattern(
+    pattern,
+    cachedUserScripts
+  );
+  if (existing) {
+    showPatternHint(
+      msg("popup_pattern_registered", "이 URL 패턴의 스크립트가 이미 있어요."),
+      "info"
+    );
+    setAddButtonMode({ disabled: false, editScriptId: existing.id });
     return;
   }
 
-  document.getElementById("btn-add").disabled = !tabUrl;
+  setAddButtonMode({ disabled: !tabUrl });
 
   if (tabUrl && !cusUserScripts.urlMatchesPattern(pattern, tabUrl)) {
-    patternHintEl.hidden = false;
-    patternHintEl.textContent = msg("popup_pattern_no_match", "현재 탭 URL과 맞지 않습니다.");
+    showPatternHint(
+      msg("popup_pattern_no_match", "현재 탭 URL과 맞지 않습니다."),
+      "error"
+    );
   }
 }
 

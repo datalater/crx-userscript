@@ -81,7 +81,15 @@ body {
 .page-rule__hint {
   margin-top: 6px;
   font-size: 11px;
+  color: #9aa0a6;
+}
+
+.page-rule__hint--error {
   color: #f28b82;
+}
+
+.page-rule__hint--info {
+  color: #81c995;
 }
 
 .btn {
