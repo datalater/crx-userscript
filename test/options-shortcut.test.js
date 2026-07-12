@@ -14,6 +14,12 @@ function createOptionsDom() {
     <div class="toolbar"></div>
     <button id="btn-refresh"></button>
     <button id="btn-add"></button>
+    <button id="btn-nav-tree"></button>
+    <button id="btn-nav-tree-close"></button>
+    <div id="nav-tree-backdrop" hidden></div>
+    <aside id="nav-tree-drawer" hidden>
+      <div id="nav-tree"></div>
+    </aside>
     <button id="btn-export"></button>
     <button id="btn-import"></button>
     <button class="options-tab is-active" data-panel="scripts"></button>

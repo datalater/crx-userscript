@@ -67,6 +67,11 @@
   },
   "options_add_util": { "message": "Add util" },
   "options_add_script_module": { "message": "Add module" },
+  "options_nav_tree_toggle": { "message": "Toggle navigator" },
+  "options_nav_tree_title": { "message": "Navigator" },
+  "options_nav_tree_close": { "message": "Close" },
+  "options_nav_tree_empty_scripts": { "message": "No scripts" },
+  "options_nav_tree_empty_utils": { "message": "No utils" },
   "options_collapse_editor": { "message": "Collapse" },
   "options_expand_editor": { "message": "Expand" },
   "options_delete_confirm": {

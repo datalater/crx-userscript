@@ -34,6 +34,11 @@ const commonUtilsListEl = document.getElementById("common-utils-list");
 const commonUtilsEmptyEl = document.getElementById("common-utils-empty");
 const commonUtilsConflictEl = document.getElementById("common-utils-conflict");
 const editorBreadcrumbEl = document.getElementById("editor-breadcrumb");
+const btnNavTree = document.getElementById("btn-nav-tree");
+const btnNavTreeClose = document.getElementById("btn-nav-tree-close");
+const navTreeBackdropEl = document.getElementById("nav-tree-backdrop");
+const navTreeDrawerEl = document.getElementById("nav-tree-drawer");
+const navTreeEl = document.getElementById("nav-tree");
 
 /** @type {Map<string, {
  *   matchInput: HTMLInputElement,
@@ -54,6 +59,7 @@ const utilRowState = new Map();
 
 /** @type {{ kind: "script" | "util", id: string, moduleId?: string | null } | null} */
 let activeEditorContext = null;
+let navTreeOpen = false;
 
 let scripts = [];
 let commonUtils = { enabled: true, modules: [] };
@@ -67,6 +73,7 @@ let isHydratingCommonUtils = false;
 
 initI18n();
 initStickyChrome();
+initNavTree();
 init();
 
 btnAdd.addEventListener("click", async () => {
@@ -232,7 +239,174 @@ function initStickyChrome() {
   observer.observe(sentinel);
 }
 
-function setActivePanel(panel) {
+function initNavTree() {
+  if (!btnNavTree || !navTreeDrawerEl || !navTreeEl) return;
+
+  btnNavTree.addEventListener("click", () => setNavTreeOpen(!navTreeOpen));
+  btnNavTreeClose?.addEventListener("click", () => setNavTreeOpen(false));
+  navTreeBackdropEl?.addEventListener("click", () => setNavTreeOpen(false));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && navTreeOpen) setNavTreeOpen(false);
+  });
+  renderNavTree();
+}
+
+function setNavTreeOpen(open) {
+  navTreeOpen = Boolean(open);
+  if (navTreeDrawerEl) navTreeDrawerEl.hidden = !navTreeOpen;
+  if (navTreeBackdropEl) navTreeBackdropEl.hidden = !navTreeOpen;
+  if (btnNavTree) {
+    btnNavTree.setAttribute("aria-expanded", navTreeOpen ? "true" : "false");
+    btnNavTree.classList.toggle("is-active", navTreeOpen);
+  }
+  if (navTreeOpen) renderNavTree();
+}
+
+function renderNavTree() {
+  if (!navTreeEl) return;
+  navTreeEl.replaceChildren();
+
+  const scriptsSection = document.createElement("section");
+  scriptsSection.className = "nav-tree__section";
+  const scriptsTitle = document.createElement("h3");
+  scriptsTitle.className = "nav-tree__section-title";
+  scriptsTitle.textContent = msg("options_tab_scripts", "페이지별 스크립트");
+  scriptsSection.append(scriptsTitle);
+
+  const scriptCards = [...listEl.querySelectorAll(".script-card")];
+  if (!scriptCards.length) {
+    const empty = document.createElement("p");
+    empty.className = "nav-tree__empty";
+    empty.textContent = msg("options_nav_tree_empty_scripts", "스크립트 없음");
+    scriptsSection.append(empty);
+  } else {
+    scriptCards.forEach((card) => {
+      const scriptId = card.dataset.id;
+      const state = rowState.get(scriptId);
+      if (!state) return;
+
+      const groupName = state.nameInput.value.trim() || breadcrumbUntitled();
+      const pattern = state.matchInput.value.trim() || defaultMatchPattern;
+      const groupBtn = createNavTreeItem({
+        label: groupName,
+        meta: pattern,
+        className: "nav-tree__item--group",
+        active:
+          activeEditorContext?.kind === "script" &&
+          activeEditorContext.id === scriptId &&
+          !activeEditorContext.moduleId,
+        onClick: () => navigateNavTreeTarget("script", scriptId),
+      });
+      scriptsSection.append(groupBtn);
+
+      state.modules.forEach((moduleState, moduleId) => {
+        const moduleName =
+          moduleState.nameInput.value.trim() || breadcrumbUntitled();
+        const moduleBtn = createNavTreeItem({
+          label: moduleName,
+          className: "nav-tree__item--child",
+          active:
+            activeEditorContext?.kind === "script" &&
+            activeEditorContext.id === scriptId &&
+            activeEditorContext.moduleId === moduleId,
+          onClick: () => navigateNavTreeTarget("script", scriptId, moduleId),
+        });
+        scriptsSection.append(moduleBtn);
+      });
+    });
+  }
+
+  const utilsSection = document.createElement("section");
+  utilsSection.className = "nav-tree__section";
+  const utilsTitle = document.createElement("h3");
+  utilsTitle.className = "nav-tree__section-title";
+  utilsTitle.textContent = msg("options_tab_common_utils", "공통 유틸");
+  utilsSection.append(utilsTitle);
+
+  const utilCards = [...commonUtilsListEl.querySelectorAll(".util-card")];
+  if (!utilCards.length) {
+    const empty = document.createElement("p");
+    empty.className = "nav-tree__empty";
+    empty.textContent = msg("options_nav_tree_empty_utils", "유틸 없음");
+    utilsSection.append(empty);
+  } else {
+    utilCards.forEach((card) => {
+      const utilId = card.dataset.id;
+      const state = utilRowState.get(utilId);
+      if (!state) return;
+      const name = state.nameInput.value.trim() || breadcrumbUntitled();
+      const utilBtn = createNavTreeItem({
+        label: name,
+        className: "nav-tree__item--group",
+        active:
+          activeEditorContext?.kind === "util" &&
+          activeEditorContext.id === utilId,
+        onClick: () => navigateNavTreeTarget("util", utilId),
+      });
+      utilsSection.append(utilBtn);
+    });
+  }
+
+  navTreeEl.append(scriptsSection, utilsSection);
+}
+
+function createNavTreeItem({ label, meta, className = "", active, onClick }) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = `nav-tree__item ${className}`.trim();
+  if (active) button.classList.add("is-active");
+
+  const labelEl = document.createElement("span");
+  labelEl.textContent = label;
+  button.append(labelEl);
+
+  if (meta) {
+    const metaEl = document.createElement("span");
+    metaEl.className = "nav-tree__meta";
+    metaEl.textContent = meta;
+    button.append(metaEl);
+  }
+
+  button.addEventListener("click", onClick);
+  return button;
+}
+
+function navigateNavTreeTarget(kind, id, moduleId = null) {
+  if (kind === "script") {
+    setActivePanel("scripts", { clearBreadcrumb: false });
+    const state = rowState.get(id);
+    const card = listEl.querySelector(
+      `.script-card[data-id="${CSS.escape(id)}"]`,
+    );
+    if (!state || !card) return;
+
+    if (moduleId) {
+      const moduleState = state.modules.get(moduleId);
+      const moduleCard = card.querySelector(
+        `.script-module-card[data-module-id="${CSS.escape(moduleId)}"]`,
+      );
+      setEditorContext("script", id, moduleId);
+      scrollBreadcrumbTarget(moduleCard, moduleState?.nameInput ?? null);
+      return;
+    }
+
+    setEditorContext("script", id, null);
+    scrollBreadcrumbTarget(card, state.nameInput);
+    return;
+  }
+
+  setActivePanel("common-utils", { clearBreadcrumb: false });
+  const state = utilRowState.get(id);
+  const card = commonUtilsListEl.querySelector(
+    `.util-card[data-id="${CSS.escape(id)}"]`,
+  );
+  if (!state || !card) return;
+  setEditorContext("util", id);
+  scrollBreadcrumbTarget(card, state.nameInput);
+}
+
+function setActivePanel(panel, options = {}) {
+  const { clearBreadcrumb = true } = options;
   activePanel = panel === "common-utils" ? "common-utils" : "scripts";
   panelScriptsEl.hidden = activePanel !== "scripts";
   panelCommonUtilsEl.hidden = activePanel !== "common-utils";
@@ -248,7 +422,8 @@ function setActivePanel(panel) {
     tab.setAttribute("aria-selected", active ? "true" : "false");
   });
 
-  clearEditorBreadcrumb();
+  if (clearBreadcrumb) clearEditorBreadcrumb();
+  renderNavTree();
 }
 
 function isUserScriptsApiAvailable() {
@@ -321,16 +496,19 @@ function showEmptyState() {
     chrome.i18n.getMessage("options_empty") ||
     "스크립트가 없습니다. 「스크립트 추가」를 눌러 시작하세요.";
   listEl.append(empty);
+  renderNavTree();
 }
 
 function clearEditorBreadcrumb() {
   activeEditorContext = null;
   updateEditorBreadcrumb();
+  renderNavTree();
 }
 
 function setEditorContext(kind, id, moduleId = null) {
   activeEditorContext = { kind, id, moduleId };
   updateEditorBreadcrumb();
+  renderNavTree();
 }
 
 function breadcrumbUntitled() {
@@ -673,12 +851,14 @@ function addRow(script, options = {}) {
     if (activeEditorContext?.kind === "script" && activeEditorContext.id === normalized.id) {
       updateEditorBreadcrumb();
     }
+    renderNavTree();
     scheduleSave();
   });
   nameInput.addEventListener("input", () => {
     if (activeEditorContext?.kind === "script" && activeEditorContext.id === normalized.id) {
       updateEditorBreadcrumb();
     }
+    renderNavTree();
     scheduleSave();
   });
   enableInput.addEventListener("change", () => {
@@ -687,6 +867,7 @@ function addRow(script, options = {}) {
   });
 
   refreshRowUi();
+  renderNavTree();
 
   if (persist) scheduleSave();
 }
@@ -780,6 +961,7 @@ function addScriptModule(scriptId, module, options = {}) {
     ) {
       updateEditorBreadcrumb();
     }
+    renderNavTree();
     scheduleSave();
   });
   enableInput.addEventListener("change", () => {
@@ -796,6 +978,7 @@ function addScriptModule(scriptId, module, options = {}) {
       updateStatusChip(scriptId, parent.statusChip, parent.enableInput);
     }
   }
+  renderNavTree();
 }
 
 function removeScriptModule(scriptId, moduleId) {
@@ -833,6 +1016,7 @@ function removeScriptModule(scriptId, moduleId) {
   }
 
   updateStatusChip(scriptId, scriptState.statusChip, scriptState.enableInput);
+  renderNavTree();
   scheduleSave();
 }
 
@@ -965,6 +1149,7 @@ function removeRow(id) {
   listEl.querySelector(`[data-id="${id}"]`)?.remove();
 
   if (!scripts.length) showEmptyState();
+  renderNavTree();
   scheduleSave();
 }
 
@@ -1152,6 +1337,7 @@ function renderCommonUtils() {
   updateCommonUtilsEmptyState();
   updateCommonUtilsConflictHints(commonUtils);
   isHydratingCommonUtils = false;
+  renderNavTree();
 }
 
 function updateCommonUtilsEmptyState() {
@@ -1259,6 +1445,7 @@ function addUtilModule(module, options = {}) {
         updateEditorBreadcrumb();
       }
       updateCommonUtilsConflictHints();
+      renderNavTree();
       scheduleSave();
     }
   });
@@ -1270,6 +1457,7 @@ function addUtilModule(module, options = {}) {
   });
 
   if (persist) updateCommonUtilsEmptyState();
+  if (!isHydratingCommonUtils) renderNavTree();
 }
 
 function removeUtilModule(id) {
@@ -1291,6 +1479,7 @@ function removeUtilModule(id) {
   commonUtilsListEl.querySelector(`[data-id="${CSS.escape(id)}"]`)?.remove();
   updateCommonUtilsEmptyState();
   updateCommonUtilsConflictHints();
+  renderNavTree();
   scheduleSave();
 }
 

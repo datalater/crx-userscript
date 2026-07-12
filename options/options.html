@@ -66,6 +66,17 @@
         </nav>
         <p id="editor-breadcrumb" class="editor-breadcrumb" hidden aria-live="polite"></p>
         <div class="toolbar">
+          <button
+            type="button"
+            id="btn-nav-tree"
+            class="btn btn-nav-tree"
+            aria-controls="nav-tree-drawer"
+            aria-expanded="false"
+            data-i18n-title="options_nav_tree_toggle"
+            title="탐색"
+          >
+            ☰
+          </button>
           <button type="button" id="btn-add" class="btn btn-primary" data-i18n="options_add_row">스크립트 추가</button>
           <button type="button" id="btn-export" class="btn" data-i18n="options_export">내보내기</button>
           <button type="button" id="btn-import" class="btn" data-i18n="options_import">가져오기</button>
@@ -74,6 +85,27 @@
         </div>
       </div>
     </div>
+
+    <div id="nav-tree-backdrop" class="nav-tree-backdrop" hidden></div>
+    <aside
+      id="nav-tree-drawer"
+      class="nav-tree-drawer"
+      hidden
+      aria-label="Script navigator"
+    >
+      <div class="nav-tree-drawer__header">
+        <strong data-i18n="options_nav_tree_title">탐색</strong>
+        <button
+          type="button"
+          id="btn-nav-tree-close"
+          class="btn btn-compact"
+          data-i18n="options_nav_tree_close"
+        >
+          닫기
+        </button>
+      </div>
+      <div id="nav-tree" class="nav-tree"></div>
+    </aside>
 
     <div class="script-list-wrap">
       <div id="page-loading" class="page-loading">

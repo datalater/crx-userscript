@@ -119,6 +119,21 @@
   "options_add_script_module": {
     "message": "모듈 추가"
   },
+  "options_nav_tree_toggle": {
+    "message": "탐색 열기/닫기"
+  },
+  "options_nav_tree_title": {
+    "message": "탐색"
+  },
+  "options_nav_tree_close": {
+    "message": "닫기"
+  },
+  "options_nav_tree_empty_scripts": {
+    "message": "스크립트 없음"
+  },
+  "options_nav_tree_empty_utils": {
+    "message": "유틸 없음"
+  },
   "options_collapse_editor": {
     "message": "접기"
   },
