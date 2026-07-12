@@ -27,15 +27,20 @@ const BASE_LINE_HEIGHT = 19.5;
 const VERTICAL_PADDING = 20;
 
 window.createCodeMirrorEditor = function createCodeMirrorEditor(options) {
+  const editorConfig = globalThis.cusUserScripts || {};
   const {
     parent,
     doc = "",
     placeholder = "",
-    minLines = 6,
+    minLines = editorConfig.EDITOR_MIN_LINES,
+    maxLines = editorConfig.EDITOR_MAX_LINES,
     onChange = () => {},
   } = options;
 
-  const minHeight = `${Math.max(minLines, 1) * BASE_LINE_HEIGHT + VERTICAL_PADDING}px`;
+  const safeMinLines = Math.max(minLines, 1);
+  const safeMaxLines = Math.max(maxLines, safeMinLines);
+  const minHeight = `${safeMinLines * BASE_LINE_HEIGHT + VERTICAL_PADDING}px`;
+  const maxHeight = `${safeMaxLines * BASE_LINE_HEIGHT + VERTICAL_PADDING}px`;
   const view = new EditorView({
     parent,
     state: EditorState.create({
@@ -69,7 +74,7 @@ window.createCodeMirrorEditor = function createCodeMirrorEditor(options) {
         EditorView.updateListener.of((update) => {
           if (update.docChanged) onChange(view.state.doc.toString());
         }),
-        editorBaseStyle(minHeight),
+        editorBaseStyle(minHeight, maxHeight),
       ],
     }),
   });
@@ -97,17 +102,20 @@ window.createCodeMirrorEditor = function createCodeMirrorEditor(options) {
   };
 };
 
-function editorBaseStyle(minHeight) {
+function editorBaseStyle(minHeight, maxHeight) {
   return EditorView.baseTheme(
     {
       "&": {
         minHeight,
+        maxHeight,
         border: "1px solid #d1d5db",
         borderRadius: "8px",
         overflow: "hidden",
       },
       ".cm-scroller": {
         minHeight,
+        maxHeight,
+        overflow: "auto",
         fontFamily: "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace",
         fontSize: "13px",
         lineHeight: "1.5",

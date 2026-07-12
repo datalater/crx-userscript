@@ -2,3 +2,4 @@
 *.pem
 .DS_Store
 node_modules/
+vendor/codemirror/codemirror.bundle.js

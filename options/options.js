@@ -188,7 +188,8 @@ function initCommonUtilsEditor() {
   commonUtilsEditor = createLightCodeEditor(commonUtilsEditorHost, {
     value: "",
     placeholder: COMMON_UTILS_PLACEHOLDER,
-    minLines: 8,
+    minLines: cusUserScripts.EDITOR_MIN_LINES,
+    maxLines: cusUserScripts.EDITOR_MAX_LINES,
     onChange: () => {
       if (!isHydratingCommonUtils) scheduleSave();
     },
@@ -384,7 +385,8 @@ function addRow(script, options = {}) {
       "options_code_placeholder",
       "registerCleanup(() => { /* cleanup */ });",
     ),
-    minLines: 8,
+    minLines: cusUserScripts.EDITOR_MIN_LINES,
+    maxLines: cusUserScripts.EDITOR_MAX_LINES,
     onChange: scheduleSave,
   });
 
