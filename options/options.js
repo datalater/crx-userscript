@@ -23,7 +23,6 @@ const pageLoadingEl = document.getElementById("page-loading");
 const saveStatusEl = document.getElementById("save-status");
 const importFileEl = document.getElementById("import-file");
 const apiWarningEl = document.getElementById("api-warning");
-const toolbarEl = document.querySelector(".toolbar");
 const btnRefresh = document.getElementById("btn-refresh");
 const btnAdd = document.getElementById("btn-add");
 const tabEls = document.querySelectorAll(".options-tab");
@@ -120,7 +119,9 @@ function setLoading(loading) {
   pageLoadingEl.hidden = !loading;
   listEl.hidden = loading;
   btnRefresh.disabled = loading;
-  toolbarEl?.classList.toggle("is-disabled", loading);
+  document.querySelectorAll(".toolbar--global, .toolbar--panel").forEach((el) => {
+    el.classList.toggle("is-disabled", loading);
+  });
   listEl.setAttribute("aria-busy", loading ? "true" : "false");
   if (loading) {
     panelScriptsEl.hidden = true;

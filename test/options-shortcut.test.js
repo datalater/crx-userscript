@@ -11,7 +11,8 @@ function createOptionsDom() {
     <span id="save-status"></span>
     <input id="import-file" type="file">
     <p id="api-warning"></p>
-    <div class="toolbar"></div>
+    <div class="toolbar toolbar--panel"></div>
+    <div class="toolbar toolbar--global"></div>
     <button id="btn-refresh"></button>
     <button id="btn-add"></button>
     <button id="btn-nav-tree"></button>

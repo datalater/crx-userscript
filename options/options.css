@@ -63,12 +63,31 @@ h1 {
   padding: 8px 20px 10px;
 }
 
-.sticky-chrome .options-tabs {
+.sticky-chrome__top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 12px;
   margin-bottom: 6px;
+}
+
+.sticky-chrome .options-tabs {
+  margin-bottom: 0;
+  flex: 1;
+  min-width: 220px;
 }
 
 .sticky-chrome .toolbar {
   margin-top: 0;
+}
+
+.toolbar--global {
+  flex-shrink: 0;
+}
+
+.toolbar--panel {
+  margin-top: 2px;
 }
 
 .sticky-chrome .btn {
@@ -340,7 +359,9 @@ h1 {
   }
 }
 
-.toolbar.is-disabled {
+.toolbar.is-disabled,
+.toolbar--global.is-disabled,
+.toolbar--panel.is-disabled {
   opacity: 0.55;
   pointer-events: none;
 }

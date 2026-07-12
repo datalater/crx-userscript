@@ -96,10 +96,16 @@
     "message": "스크립트 추가"
   },
   "options_export": {
-    "message": "내보내기"
+    "message": "전체 내보내기"
+  },
+  "options_export_title": {
+    "message": "페이지별 스크립트와 공통 유틸을 모두 JSON으로 내보냅니다."
   },
   "options_import": {
-    "message": "가져오기"
+    "message": "전체 가져오기"
+  },
+  "options_import_title": {
+    "message": "JSON에서 페이지별 스크립트와 공통 유틸을 모두 가져옵니다."
   },
   "options_tab_scripts": {
     "message": "페이지별 스크립트"
