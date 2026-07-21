@@ -57,11 +57,11 @@
     "message": "Enable “Allow user scripts” for CRX User Script on chrome://extensions."
   },
   "options_add_row": { "message": "Add script" },
-  "options_export": { "message": "Export all" },
+  "options_export": { "message": "export" },
   "options_export_title": {
     "message": "Export all page scripts and shared utils as JSON."
   },
-  "options_import": { "message": "Import all" },
+  "options_import": { "message": "import" },
   "options_import_title": {
     "message": "Import page scripts and shared utils from JSON."
   },
