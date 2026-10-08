@@ -19,6 +19,10 @@ pnpm run build:codemirror
 
 ## UI
 
+- **Toolbar badge**: green count of enabled, non-empty scripts matching the tab URL
+  and registered with Chrome. Counts scripts, not modules; hidden when none apply.
+  Updates on navigation, tab activation, and settings/registry changes. This shows
+  configured activation, not successful execution; saved changes still need a page reload.
 - **Popup** (toolbar icon): scripts matching the active tab, status indicator, enable toggle, reload tab
 - **Options**: add/edit scripts, URL pattern hints, import/export JSON
 

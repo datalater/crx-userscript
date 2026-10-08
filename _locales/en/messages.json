@@ -1,4 +1,16 @@
 {
+  "toolbar_active_scripts": {
+    "message": "User Spell — $COUNT$ active script(s) on this page (configured, not execution status)",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "toolbar_no_active_scripts": {
+    "message": "User Spell — No active scripts on this page"
+  },
   "popup_page_status_none": { "message": "No scripts match this page." },
   "popup_page_status_disabled": {
     "message": "Scripts match this page but all are disabled."

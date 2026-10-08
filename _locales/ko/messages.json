@@ -1,4 +1,16 @@
 {
+  "toolbar_active_scripts": {
+    "message": "User Spell — 이 페이지에 활성 스크립트 $COUNT$개 (설정 기준 · 실행 성공 여부 아님)",
+    "placeholders": {
+      "count": {
+        "content": "$1",
+        "example": "2"
+      }
+    }
+  },
+  "toolbar_no_active_scripts": {
+    "message": "User Spell — 이 페이지에 활성 스크립트 없음"
+  },
   "popup_page_status_none": {
     "message": "이 페이지에 맞는 스크립트가 없습니다."
   },

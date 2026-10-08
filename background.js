@@ -1,4 +1,7 @@
-importScripts("lib/sync.js", "lib/script-status.js");
+importScripts("lib/sync.js", "lib/script-status.js", "lib/toolbar.js");
+
+// Reconcile existing tabs whenever the service worker starts, including reloads.
+void refreshAllToolbarBadges();
 
 function rememberReferenceTabUrl(url) {
   if (!cusUserScripts.isWebUrl(url)) return;
@@ -8,6 +11,7 @@ function rememberReferenceTabUrl(url) {
 }
 
 chrome.tabs.onActivated.addListener((activeInfo) => {
+  void refreshToolbarBadge(activeInfo.tabId);
   chrome.tabs
     .get(activeInfo.tabId)
     .then((tab) => rememberReferenceTabUrl(tab.url))
@@ -15,6 +19,9 @@ chrome.tabs.onActivated.addListener((activeInfo) => {
 });
 
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+  if (changeInfo.url !== undefined || changeInfo.status) {
+    void refreshToolbarBadge(tabId);
+  }
   if (!tab.active) return;
   rememberReferenceTabUrl(changeInfo.url || tab.url);
 });
@@ -33,7 +40,8 @@ function scheduleRegistrySync() {
     .then(() => syncUserScriptsRegistry())
     .catch((error) => {
       console.error("[cus:user-script] registry sync failed", error);
-    });
+    })
+    .then(() => refreshAllToolbarBadges());
   return registrySyncChain;
 }
 
