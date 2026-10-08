@@ -22,6 +22,34 @@ pnpm run build:codemirror
 - **Popup** (toolbar icon): scripts matching the active tab, status indicator, enable toggle, reload tab
 - **Options**: add/edit scripts, URL pattern hints, import/export JSON
 
+## Script APIs
+
+Page-script modules and common-util modules can use the extension-provided
+`userscript` namespace. It is injected into each script’s scope, not installed on
+`window`, and does not require common utils to be enabled.
+
+```js
+const style = document.createElement("style");
+style.textContent = ".gn-ad-slot, .gn-ad-slot * { visibility: hidden !important; }";
+document.head.appendChild(style);
+
+userscript.registerCleanup(() => style.remove());
+```
+
+- `userscript.registerCleanup(fn)` registers a synchronous cleanup callback. The
+  extension runs it on teardown when script/common-utils settings change. It does
+  not run immediately. Register DOM, listener, or timer cleanup here.
+- `registerCleanup(fn)` remains a backward-compatible alias. Prefer the namespace
+  in new code.
+- `utils` is separate: it contains exports from your enabled common-util modules,
+  not extension runtime APIs. It may be absent when no valid utilities are enabled.
+- The editor suggests `userscript` and `userscript.registerCleanup`, with API
+  descriptions (Ctrl+Space also opens completion).
+- Scripts are injected at `document_idle`. Reload the target page to run updated
+  code; changing settings tears down old code but does not immediately run new code.
+- These are classic scripts, not ES modules: native static `import` is unsupported.
+  The common-utils `export const utils = ...` syntax is transformed by the extension.
+
 ## Import from MinTool
 
 Export JSON from the old MinTool user scripts UI (if any), then **Import** on the options page. Format: `{ "version": 1, "userScripts": [...] }`.

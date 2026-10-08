@@ -121,8 +121,17 @@
   "options_delete": { "message": "Delete" },
   "options_code_label": { "message": "JavaScript" },
   "options_code_example": { "message": "example" },
+  "editor_runtime_cleanup_info": {
+    "message": "Extension runtime API. Registers a synchronous callback for teardown when script/common-utils settings change. Does not run immediately. Example: userscript.registerCleanup(() => style.remove());"
+  },
+  "editor_runtime_namespace_info": {
+    "message": "API provided by the extension runtime, independent of common utils. Use userscript.registerCleanup(fn) to register cleanup."
+  },
+  "editor_utils_namespace_info": {
+    "message": "Your enabled common-util exports, not extension runtime APIs. Available only when valid common utils are enabled."
+  },
   "options_code_placeholder": {
-    "message": "registerCleanup(() => { /* cleanup */ });"
+    "message": "userscript.registerCleanup(() => { /* cleanup */ });"
   },
   "options_saving": { "message": "Saving…" },
   "options_saved": { "message": "✅ Saved" },

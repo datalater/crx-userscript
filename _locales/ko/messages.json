@@ -217,8 +217,17 @@
   "options_code_example": {
     "message": "example"
   },
+  "editor_runtime_cleanup_info": {
+    "message": "확장 실행 환경 API입니다. 스크립트·공통 유틸 설정 변경에 따른 정리 시 실행할 동기 콜백을 등록합니다. 즉시 실행하지 않습니다. 예: userscript.registerCleanup(() => style.remove());"
+  },
+  "editor_runtime_namespace_info": {
+    "message": "공통 유틸과 별개로 확장 실행 환경이 제공하는 API입니다. userscript.registerCleanup(fn)으로 정리 함수를 등록하세요."
+  },
+  "editor_utils_namespace_info": {
+    "message": "활성화된 사용자 공통 유틸의 내보내기입니다. 확장 실행 환경 API가 아니며, 유효한 공통 유틸이 활성화되어 있을 때만 제공됩니다."
+  },
   "options_code_placeholder": {
-    "message": "registerCleanup(() => { /* 정리 로직 */ });"
+    "message": "userscript.registerCleanup(() => { /* 정리 로직 */ });"
   },
   "options_saving": {
     "message": "저장 중…"

@@ -941,7 +941,7 @@ function addScriptModule(scriptId, module, options = {}) {
     value: normalized.code,
     placeholder: msg(
       "options_code_placeholder",
-      "registerCleanup(() => { /* cleanup */ });",
+      "userscript.registerCleanup(() => { /* cleanup */ });",
     ),
     minLines: cusUserScripts.EDITOR_MIN_LINES,
     maxLines: cusUserScripts.EDITOR_MAX_LINES,

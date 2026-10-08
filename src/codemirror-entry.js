@@ -1,6 +1,6 @@
 import { closeBrackets, closeBracketsKeymap, completionKeymap, autocompletion } from "@codemirror/autocomplete";
 import { defaultKeymap, history, historyKeymap, indentWithTab } from "@codemirror/commands";
-import { javascript } from "@codemirror/lang-javascript";
+import { completionPath, javascript, javascriptLanguage } from "@codemirror/lang-javascript";
 import {
   bracketMatching,
   defaultHighlightStyle,
@@ -61,6 +61,7 @@ window.createCodeMirrorEditor = function createCodeMirrorEditor(options) {
         highlightActiveLine(),
         placeholderExtension(placeholder),
         javascript(),
+        javascriptLanguage.data.of({ autocomplete: runtimeApiCompletions }),
         search(),
         syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
         keymap.of([
@@ -101,6 +102,56 @@ window.createCodeMirrorEditor = function createCodeMirrorEditor(options) {
     },
   };
 };
+
+function runtimeApiCompletions(context) {
+  const target = completionPath(context);
+  if (!target) return null;
+
+  const from = context.pos - target.name.length;
+  if (target.path.length === 1 && target.path[0] === "userscript") {
+    return {
+      from,
+      validFor: /^\w*$/,
+      options: [{
+        label: "registerCleanup",
+        type: "function",
+        detail: "(fn) => void",
+        info: runtimeApiMessage(
+          "editor_runtime_cleanup_info",
+          "Extension runtime API. Registers a synchronous callback for teardown when script/common-utils settings change. Does not run immediately. Example: userscript.registerCleanup(() => style.remove());",
+        ),
+      }],
+    };
+  }
+
+  if (target.path.length || (!target.name && !context.explicit)) return null;
+  return {
+    from,
+    validFor: /^\w*$/,
+    options: [
+      {
+        label: "userscript",
+        type: "namespace",
+        info: runtimeApiMessage(
+          "editor_runtime_namespace_info",
+          "API provided by the extension runtime, independent of common utils. Use userscript.registerCleanup(fn) to register cleanup.",
+        ),
+      },
+      {
+        label: "utils",
+        type: "namespace",
+        info: runtimeApiMessage(
+          "editor_utils_namespace_info",
+          "Your enabled common-util exports, not extension runtime APIs. Available only when valid common utils are enabled.",
+        ),
+      },
+    ],
+  };
+}
+
+function runtimeApiMessage(key, fallback) {
+  return globalThis.chrome?.i18n?.getMessage(key) || fallback;
+}
 
 function editorBaseStyle(minHeight, maxHeight) {
   return EditorView.baseTheme(
